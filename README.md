@@ -10,7 +10,7 @@
 
 </a>
 
-<h3  align="center">Criminal Court System Using Tree, Queue, Stack, LinkedList</h3>
+<h3  align="center">Visual Novel CLI Using Tree, Queue, Stack, LinkedList</h3>
 
 <p  align="center">
 

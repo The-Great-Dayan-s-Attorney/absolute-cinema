@@ -7,7 +7,8 @@
 int main(){
     story ListStory = NULL;
 
-    addStory(&ListStory , createStory("apa", "tes"));
+    addStory(&ListStory , createStory("Cerita 1", "deskripsi deskripsian"));
+    addStory(&ListStory, createStory("Cerita 2", "gitulah"));
 
     printAllStory(ListStory); 
 

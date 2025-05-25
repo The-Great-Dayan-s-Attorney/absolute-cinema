@@ -4,22 +4,26 @@
 #include "convention.h"
 #include "chapter.h"
 
-typedef struct Story* story;
+typedef struct Story* addressStory;
 typedef struct Story{
     int id;
     char title[MAX_TITLE];
     char description[MAX_DESCRIPTION];
 
-    story nextStory;
-    chapter firstChapter;
+    addressStory nextStory;
+    addressChapter firstChapter;
 }Story;
 
-story createStory(char *title, char *description);
+addressStory createStory(char *title, char *description);
 
-void addStory(story *s, story storyNew);
+void addStory(addressStory *s, addressStory storyNew);
 
-void printAllStory(story s);
+addressStory findStory(addressStory listStory, const char *titleStory);
 
-void writeStoryToFolder(story s);
+void deleteStoryByTitle(addressStory *headStory, const char *titleStory);
+
+void printAllStory(addressStory s);
+
+void writeStoryToFolder(addressStory s);
 
 #endif

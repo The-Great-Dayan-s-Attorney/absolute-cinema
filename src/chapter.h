@@ -5,14 +5,17 @@
 #include <stdlib.h>
 
 #include "convention.h"
+#include "story.h"
 
-typedef struct Chapter* chapter;
+typedef struct Chapter* addressChapter;
 typedef struct Chapter{
     int id;
     char title [MAX_TITLE];
     char description [MAX_DESCRIPTION];
 
-    chapter nextChapter;
+    addressChapter nextChapter;
 }Chapter;
+
+void deleteAllChapters(addressChapter ch);
 
 #endif

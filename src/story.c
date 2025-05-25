@@ -1,11 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <direct.h>
+
+
 #include "story.h"
+#include "chapter.h"
 
 
-story createStory(char *title, char *description) {
-    story S = (story)malloc(sizeof(Story));
+
+addressStory createStory(char *title, char *description) {
+    addressStory S = (addressStory)malloc(sizeof(Story));
     if (S == NULL) {
         printf("gagal\n");
         return NULL;
@@ -18,41 +25,77 @@ story createStory(char *title, char *description) {
     return S;
 }
 
-void addStory(story *s, story storyNew) {
+void addStory(addressStory *s, addressStory newStory) {
     if (*s == NULL) {
-        *s = storyNew;
+        *s = newStory;
     } else {
-        storyNew->nextStory = *s;
-        *s = storyNew;
+        newStory->nextStory = *s;
+        *s = newStory;
     }
 }
 
-void printAllStory(story s) {
+addressStory findStory(addressStory listStory, const char *titleStory) {
+    addressStory current = listStory;
+    while (current != NULL) {
+        if (strcmp(current->title, titleStory) == 0) {
+            return current;   
+        }
+        current = current->nextStory;
+    }
+    return NULL;
+}
+
+void deleteStoryByTitle(addressStory *headStory, const char *titleStory) {
+    addressStory current = *headStory;
+    addressStory prev = NULL;
+
+    while (current != NULL && strcmp(current->title, titleStory) != 0) {
+        prev = current;
+        current = current->nextStory;
+    }
+    if (current == NULL) {
+        printf("Story dengan judul \"%s\" tidak ditemukan.\n", titleStory);
+        return;
+    }
+
+    deleteAllChapters(current->firstChapter);
+    if (prev == NULL) {
+        *headStory = current->nextStory;
+    } else {
+        prev->nextStory = current->nextStory;
+    }
+    free(current);
+    printf("Story dengan judul \"%s\" berhasil dihapus.\n", titleStory);
+}
+
+
+void printAllStory(addressStory s) { // Fungsi pengecekan, bukan mode play
+    int index = 1;
     while (s != NULL) {
-        printf("[Judul: %s, Deskripsi: %s] -> ", s->title, s->description);
+        printf("Story %d:\n", index++);
+        printf("  Judul     : %s\n", s->title);
+        printf("  Deskripsi : %s\n", s->description);
         s = s->nextStory;
     }
     printf("NULL\n");
 }
 
-void writeStoryToFolder(story s) {
+
+void writeStoryToFolder(addressStory s) {
     if (s == NULL) return;
 
-    // Buat nama folder dari judul
     char folderName[150];
     snprintf(folderName, sizeof(folderName), "../data/%s", s->title);
 
-    // Buat folder "data" dulu (jika belum)
-    mkdir("data", 0777);
+    mkdir("data");
 
-    // Buat folder khusus untuk story
-    mkdir(folderName, 0777);  // Bisa gagal kalau nama tidak valid (hati-hati dengan karakter aneh)
+    mkdir(folderName);  //
 
-    // Siapkan path file
+
     char filePath[200];
     snprintf(filePath, sizeof(filePath), "%s/story.txt", folderName);
 
-    // Simpan file
+  
     FILE *f = fopen(filePath, "w");
     if (f == NULL) {
         printf("Gagal membuka file: %s\n", filePath);

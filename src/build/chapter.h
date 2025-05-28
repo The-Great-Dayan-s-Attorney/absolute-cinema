@@ -6,16 +6,21 @@
 
 #include "convention.h"
 #include "story.h"
+#include "scene.h"
 
 typedef struct Chapter* addressChapter;
 typedef struct Chapter{
-    int id;
     char title [MAX_TITLE];
     char description [MAX_DESCRIPTION];
 
     addressChapter nextChapter;
+    addressScene firstScene;
 }Chapter;
 
+addressChapter createChapter(const char *title, const char *desc);
+
 void deleteAllChapters(addressChapter ch);
+
+void printChapter(addressChapter ch);
 
 #endif

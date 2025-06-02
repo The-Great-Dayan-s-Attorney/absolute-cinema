@@ -26,4 +26,6 @@ void printAllStory(addressStory s);
 
 void writeStoryToFolder(addressStory s);
 
+char* pilihStoryDariFolder(const char* basePath);
+
 #endif

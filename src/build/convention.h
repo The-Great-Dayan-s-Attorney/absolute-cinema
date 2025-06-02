@@ -7,4 +7,5 @@
 #define MAX_STORY 100
 #define MAX_NAME 100
 
+
 #endif // !

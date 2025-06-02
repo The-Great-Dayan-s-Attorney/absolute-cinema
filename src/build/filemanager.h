@@ -8,7 +8,7 @@ typedef struct Chapter* addressChapter;
 typedef struct Scene* addressScene;
 
 typedef struct {
-    char filename[MAX_FILENAME];
+    char filename[MAX_NAME];
     char title[MAX_TITLE];
 }StoryEntry;
 

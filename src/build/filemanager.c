@@ -24,8 +24,8 @@ void saveStory(addressStory story, char* filename) {
         return;
     }
 
-    char filepath[MAX_FILENAME];
-    snprintf(filepath, MAX_FILENAME, "data/Cerita 1/%s", filename);
+    char filepath[MAX_NAME];
+    snprintf(filepath, MAX_NAME, "data/Cerita 1/%s", filename);
 
     FILE* file = fopen(filepath, "w");
     if (file == NULL) {
@@ -71,8 +71,8 @@ addressStory loadStory(char* filename) {
         return NULL;
     }
 
-    char filepath[MAX_FILENAME];
-    snprintf(filepath, MAX_FILENAME, "data/Cerita 1/%s", filename);
+    char filepath[MAX_NAME];
+    snprintf(filepath, MAX_NAME, "data/Cerita 1/%s", filename);
 
     FILE* file = fopen(filepath, "r");
     if (file == NULL) {
@@ -166,7 +166,7 @@ addressStory loadStory(char* filename) {
 
 StoryEntry* listStories(int* count) {
     *count = 0;
-    StoryEntry* stories = malloc(MAX_STORIES * sizeof(StoryEntry));
+    StoryEntry* stories = malloc(MAX_STORY * sizeof(StoryEntry));
     if (stories == NULL) {
         fprintf(stderr, "Error: Gagal mengalokasi memori!\n");
         return NULL;
@@ -182,8 +182,8 @@ StoryEntry* listStories(int* count) {
         struct dirent* entry;
         while ((entry = readdir(dir)) != NULL) {
             if (strstr(entry->d_name, ".txt")) {
-                char filepath[MAX_FILENAME];
-                snprintf(filepath, MAX_FILENAME, "%s/%s", dirs[d], entry->d_name);
+                char filepath[MAX_NAME];
+                snprintf(filepath, MAX_NAME, "%s/%s", dirs[d], entry->d_name);
                 if (validateFile(filepath)) {
                     FILE* file = fopen(filepath, "r");
                     if (file) {
@@ -191,8 +191,8 @@ StoryEntry* listStories(int* count) {
                         if (fgets(line, 1000, file)) {
                             char title[MAX_TITLE];
                             if (sscanf(line, "Story: %*d|%[^|]", title) == 1) {
-                                strncpy(stories[*count].filename, entry->d_name, MAX_FILENAME - 1);
-                                stories[*count].filename[MAX_FILENAME - 1] = '\0';
+                                strncpy(stories[*count].filename, entry->d_name, MAX_NAME - 1);
+                                stories[*count].filename[MAX_NAME - 1] = '\0';
                                 strncpy(stories[*count].title, title, MAX_TITLE - 1);
                                 stories[*count].title[MAX_TITLE - 1] = '\0';
                                 (*count)++;
@@ -236,8 +236,8 @@ void deleteStory(char* filename) {
         fprintf(stderr, "Error: Story belum terdaftar\n");
         return;
     }
-    char filepath[MAX_FILENAME];
-    snprintf(filepath, MAX_FILENAME, "data/Cerita 1/%s", filename);
+    char filepath[MAX_NAME];
+    snprintf(filepath, MAX_NAME, "data/Cerita 1/%s", filename);
     if (!validateFile(filepath)) {
         fprintf(stderr, "Error: Story tidak ditemukan!\n");
         return;

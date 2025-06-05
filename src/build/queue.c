@@ -9,7 +9,7 @@ bool isQueueEmpty(Queue q) {
 }
 
 
-void createQueue(Queue *q) {
+void initQueue(Queue *q) {
     q->head = NULL;
     q->tail = NULL;
 }

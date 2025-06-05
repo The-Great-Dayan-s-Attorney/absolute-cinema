@@ -24,14 +24,7 @@ addressChapter createChapter(const char* title, const char* desc) {
     return ch;
 }
 
-void deleteAllChapters(addressChapter ch) {
-    addressChapter temp;
-    while (ch != NULL) {
-        temp = ch;
-        ch = ch->nextChapter;
-        free(temp);
-    }
-}
+// delete chapter harusnya
 
 void printChapter(addressChapter ch) {
     if (ch == NULL) {
@@ -70,3 +63,42 @@ void printChapter(addressChapter ch) {
     printf("\n--- Akhir Chapter ---\n");
 }
 
+void saveChapterToFile(addressStory s, addressChapter ch) {
+    if (s == NULL || ch == NULL) return;
+
+    // Hitung nomor chapter
+    int count = 1;
+    addressChapter temp = s->chapters.head;
+    while (temp != NULL && temp != ch) {
+        count++;
+        temp = temp->nextChapter;
+    }
+
+    char folderPath[150];
+    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
+    folderPath[strcspn(folderPath, "\n")] = '\0';
+
+    if (mkdir("data") != 0 && errno != EEXIST) {
+        perror("Gagal membuat folder data");
+        return;
+    }
+
+    if (mkdir(folderPath) != 0 && errno != EEXIST) {
+        perror("Gagal membuat folder story");
+        return;
+    }
+
+    // Path file
+    char chapterFile[200];
+    snprintf(chapterFile, sizeof(chapterFile), "%s/chapter_%d.txt", folderPath, count);
+
+    FILE *cf = fopen(chapterFile, "w");
+    if (cf != NULL) {
+        fprintf(cf, "Title: %s", ch->title);
+        fprintf(cf, "Description: %s", ch->description);
+        fclose(cf);
+        printf("Chapter disimpan ke: %s\n", chapterFile);
+    } else {
+        printf("Gagal menyimpan file chapter ke: %s\n", chapterFile);
+    }
+}

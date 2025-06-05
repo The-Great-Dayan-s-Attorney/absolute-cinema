@@ -46,7 +46,7 @@ void mainMenuBuild() {
                 if (storyName != NULL) {
                     // Path yang benar ke file story.txt
                     char storyPath[200];
-                    snprintf(storyPath, sizeof(storyPath), "../../data/%s/story.txt", storyName);
+                    snprintf(storyPath, sizeof(storyPath), "../../data/%s/details_story.txt", storyName);
 
                     FILE *f = fopen(storyPath, "r");
                     if (f == NULL) {
@@ -111,11 +111,17 @@ void menuStory(addressStory s) {
 
         switch (pilihan) {
             case 1: {
-                printf("cas 1");
+                char title[MAX_TITLE], desc[MAX_DESCRIPTION];
+                printf("Judul Chapter: "); fgets(title, MAX_TITLE, stdin);
+                printf("Deskripsi Chapter: "); fgets(desc, MAX_DESCRIPTION, stdin);
+
+                addressChapter ch = createChapter(title, desc);
+                enqueue(&s->chapters, ch);
+                saveChapterToFile(s, ch);
                 break;
             }
             case 2:
-                printf("cas 2");
+                printQueue(&s->chapters);
                 break;
             case 3: {
                 printf("cas 3");

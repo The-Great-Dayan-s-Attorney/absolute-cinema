@@ -10,7 +10,7 @@ typedef struct {
 
 
 bool isQueueEmpty(Queue q);
-void createQueue(Queue *q);
+void initQueue(Queue *q);
 void enqueue(Queue *q, addressChapter newCh);
 addressChapter dequeue(Queue *q);
 void printQueue(const Queue *q);

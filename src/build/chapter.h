@@ -8,6 +8,8 @@
 #include "story.h"
 #include "scene.h"
 
+typedef struct Story* addressStory;
+
 typedef struct Chapter* addressChapter;
 typedef struct Chapter{
     char title [MAX_TITLE];
@@ -19,8 +21,10 @@ typedef struct Chapter{
 
 addressChapter createChapter(const char *title, const char *desc);
 
-void deleteAllChapters(addressChapter ch);
+// delete chapter
 
 void printChapter(addressChapter ch);
+
+void saveChapterToFile(addressStory s, addressChapter ch);
 
 #endif

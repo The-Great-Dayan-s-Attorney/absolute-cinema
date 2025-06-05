@@ -13,6 +13,7 @@
 #include "story.h"
 #include "chapter.h"
 #include "convention.h"
+#include "queue.h"
 
 
 addressStory createStory(char *title, char *description) {
@@ -25,7 +26,7 @@ addressStory createStory(char *title, char *description) {
     strcpy(S->title, title);
     strcpy(S->description, description);
     S->nextStory = NULL;
-    S->firstChapter = NULL;
+    initQueue(&S->chapters);  // Inisialisasi queue chapter
     return S;
 }
 
@@ -49,6 +50,16 @@ addressStory findStory(addressStory listStory, const char *titleStory) {
     return NULL;
 }
 
+void deleteAllChapters(Queue* q) {
+    addressChapter temp;
+    while (q->head != NULL) {
+        temp = q->head;
+        q->head = q->head->nextChapter;
+        free(temp);
+    }
+    q->tail = NULL;
+}
+
 void deleteStoryByTitle(addressStory *headStory, const char *titleStory) {
     addressStory current = *headStory;
     addressStory prev = NULL;
@@ -57,20 +68,26 @@ void deleteStoryByTitle(addressStory *headStory, const char *titleStory) {
         prev = current;
         current = current->nextStory;
     }
+
     if (current == NULL) {
         printf("Story dengan judul \"%s\" tidak ditemukan.\n", titleStory);
         return;
     }
 
-    deleteAllChapters(current->firstChapter);
+    // Hapus semua chapter dari queue
+    deleteAllChapters(&current->chapters);
+
+    // Hapus node story dari linked list
     if (prev == NULL) {
         *headStory = current->nextStory;
     } else {
         prev->nextStory = current->nextStory;
     }
+
     free(current);
     printf("Story dengan judul \"%s\" berhasil dihapus.\n", titleStory);
 }
+
 
 
 void printAllStory(addressStory s) { // Fungsi pengecekan, bukan mode play
@@ -108,7 +125,7 @@ void writeStoryToFolder(addressStory s) {
     }
 
     char filePath[200];
-    snprintf(filePath, sizeof(filePath), "%s/story.txt", folderName);
+    snprintf(filePath, sizeof(filePath), "%s/details_story.txt", folderName);
 
     FILE *f = fopen(filePath, "w");
     if (f == NULL) {

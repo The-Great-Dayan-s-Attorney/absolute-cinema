@@ -3,6 +3,7 @@
 
 #include "convention.h"
 #include "chapter.h"
+#include "queue.h"
 
 typedef struct Story* addressStory;
 typedef struct Story{
@@ -11,7 +12,7 @@ typedef struct Story{
     char description[MAX_DESCRIPTION];
 
     addressStory nextStory;
-    addressChapter firstChapter;
+    Queue chapters;
 }Story;
 
 addressStory createStory(char *title, char *description);
@@ -19,6 +20,8 @@ addressStory createStory(char *title, char *description);
 void addStory(addressStory *s, addressStory storyNew);
 
 addressStory findStory(addressStory listStory, const char *titleStory);
+
+void deleteAllChapters(Queue* q);
 
 void deleteStoryByTitle(addressStory *headStory, const char *titleStory);
 

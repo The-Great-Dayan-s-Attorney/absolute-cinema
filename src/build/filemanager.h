@@ -10,11 +10,11 @@ typedef struct Scene* addressScene;
 typedef struct {
     char filename[MAX_NAME];
     char title[MAX_TITLE];
-}StoryEntry;
+} StoryEntry;
 
 typedef struct FileManager {
     int dummy;
-}FileManager;
+} FileManager;
 
 FileManager* createFileManager();
 void saveStory(addressStory story, char* filename);

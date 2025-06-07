@@ -7,6 +7,7 @@
 #include "convention.h"
 #include "story.h"
 #include "scene.h"
+#include "queue.h"
 
 typedef struct Story* addressStory;
 
@@ -26,5 +27,17 @@ addressChapter createChapter(const char *title, const char *desc);
 void printChapter(addressChapter ch);
 
 void saveChapterToFile(addressStory s, addressChapter ch);
+
+addressChapter pilihChapter(Queue *q);
+
+void saveChapterWithScenes(addressStory s, addressChapter ch, int chapterIndex);
+
+addressChapter loadChapterFromFile(const char *filepath);
+
+void loadChaptersFromFolder(addressStory s);
+
+void printAllChapter(const Queue *q);
+
+int getChapterCount(Queue *q);
 
 #endif

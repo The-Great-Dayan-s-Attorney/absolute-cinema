@@ -7,6 +7,10 @@
 #include <errno.h>
 #include <dirent.h>
 #include <string.h>
+#include <string.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 
 
@@ -102,10 +106,7 @@ void printAllStory(addressStory s) { // Fungsi pengecekan, bukan mode play
 }
 
 
-#include <string.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <errno.h>
+
 
 void writeStoryToFolder(addressStory s) {
     if (s == NULL) return;

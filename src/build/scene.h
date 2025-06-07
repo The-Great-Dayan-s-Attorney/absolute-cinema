@@ -9,18 +9,22 @@
 typedef struct Chapter* addressChapter;
 
 typedef struct Scene* addressScene;
-typedef struct Scene{
+typedef struct Scene {
+    int id;
     char title[MAX_TITLE];
     char description[MAX_DESCRIPTION];
 
     Choice choices[MAX_CHOICES];
+    int choiceCount;
     addressScene nextScene;
-}Scene;
+} Scene;
 
-addressScene createScene(const char *title, const char *desc);
+addressScene createScene(const char *title, const char *desc, int id);
 
 void addSceneToChapter(addressChapter ch, addressScene sc);
 
+addressScene findSceneByID(addressChapter ch, int id);
 
+void printSceneStructure(addressChapter ch);
 
 #endif

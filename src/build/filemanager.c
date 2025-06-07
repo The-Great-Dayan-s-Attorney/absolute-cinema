@@ -15,7 +15,9 @@ static void trim(char* str) {
 
 FileManager* createFileManager() {
     FileManager* fm = malloc(sizeof(FileManager));
-    if (fm == NULL) return NULL;
+    if (fm == NULL) {
+    return NULL;
+    }
     fm->dummy = 0;
     return fm;
 }
@@ -156,8 +158,9 @@ addressStory loadStory(char* filename) {
 StoryEntry* listStories(int* count) {
     *count = 0;
     StoryEntry* stories = malloc(MAX_STORY * sizeof(StoryEntry));
-    if (stories == NULL) return NULL;
-
+    if (stories == NULL) {
+        return NULL;
+    }
     DIR* dir = opendir("data");
     if (dir == NULL) {
         free(stories);

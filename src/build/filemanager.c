@@ -126,7 +126,7 @@ addressStory loadStory(char* filename) {
             } else if (strncmp(line, "Scene: ", 7) == 0) {
                 char title[MAX_TITLE], desc[MAX_DESCRIPTION], choices[100], ids[50];
                 if (sscanf(line, "Scene: %[^|]|%[^|]|%[^|]|%[^\n]", title, desc, choices, ids) < 4) continue;
-                addressScene scene = createScene(title, desc);
+                addressScene scene = createScene(title, desc, -1); // Tambah argumen id dengan nilai default -1
                 if (scene == NULL) continue;
 
                 char* choice = strtok(choices, ",");
@@ -227,4 +227,46 @@ void deleteStory(char* filename) {
     char command[300];
     snprintf(command, 300, "rm -rf %s", folderPath);
     system(command);
+}
+
+void updateStoryFile(addressStory story, char* filename) {
+    if (story == NULL || filename == NULL) return;
+
+    char folderPath[MAX_NAME];
+    snprintf(folderPath, MAX_NAME, "data/%s", filename);
+
+    char detailsPath[MAX_NAME];
+    snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
+
+    FILE* file = fopen(detailsPath, "w");
+    if (file == NULL) {
+        printf("Gagal membuka file untuk diperbarui!\n");
+        return;
+    }
+
+    fprintf(file, "Judul: %s\n", story->title);
+    fprintf(file, "Deskripsi: %s\n", story->description);
+    fclose(file);
+
+    printf("File story berhasil diperbarui!\n");
+}
+
+addressStory loadAllStories() {
+    int count = 0;
+    StoryEntry* stories = listStories(&count);
+    if (stories == NULL) {
+        printf("Tidak ada story yang bisa dimuat!\n");
+        return NULL;
+    }
+
+    addressStory listStory = NULL;
+    for (int i = 0; i < count; i++) {
+        addressStory story = loadStory(stories[i].filename);
+        if (story != NULL) {
+            addStory(&listStory, story); // Asumsi addStory ada di story.c
+        }
+    }
+
+    free(stories); // Bebaskan memori sementara
+    return listStory;
 }

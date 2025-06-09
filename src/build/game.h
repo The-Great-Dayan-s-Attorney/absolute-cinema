@@ -27,5 +27,7 @@ void selectScene(Game* game, int choiceId);
 void displayScene(Game* game);
 void undoScene(Game* game);
 void endGame(Game* game);
+void saveGameState(Game* game, char* filename);
+void loadGameState(Game* game, char* filename);
 
 #endif

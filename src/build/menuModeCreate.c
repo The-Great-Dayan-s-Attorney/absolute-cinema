@@ -116,7 +116,10 @@ void menuStory(addressStory s) {
         printf("2. Lihat Chapter\n");
         printf("3. Pilih Chapter\n");
         printf("4. Simpan Story ke Folder\n");
-        printf("5. Kembali\n");
+        printf("5. Edit Chapter\n");
+        printf("6. Hapus Chapter\n");
+        printf("7. Kembali\n");
+
         printf("Pilihan: ");
         scanf("%d", &pilihan); getchar();
 
@@ -194,8 +197,63 @@ void menuStory(addressStory s) {
                 printf("Semua chapter berhasil disimpan ulang.\n");
                 break;
             }
+            case 5: {
+                if (isQueueEmpty(s->chapters)) {
+                    printf("Belum ada chapter untuk diedit.\n");
+                    break;
+                }
+
+                printAllChapter(&s->chapters);
+                int pilih;
+                printf("Pilih nomor chapter yang ingin diedit: ");
+                scanf("%d", &pilih); getchar();
+
+                addressChapter curr = s->chapters.head;
+                for (int i = 1; i < pilih && curr != NULL; i++) {
+                    curr = curr->nextChapter;
+                }
+
+                if (curr == NULL) {
+                    printf("Chapter tidak ditemukan.\n");
+                    break;
+                }
+
+                printf("Judul baru (kosongkan untuk tidak mengubah): ");
+                char newTitle[MAX_TITLE];
+                fgets(newTitle, MAX_TITLE, stdin);
+
+                printf("Deskripsi baru (kosongkan untuk tidak mengubah): ");
+                char newDesc[MAX_DESCRIPTION];
+                fgets(newDesc, MAX_DESCRIPTION, stdin);
+
+                if (strlen(newTitle) > 1)
+                    strncpy(curr->title, newTitle, MAX_TITLE);
+                if (strlen(newDesc) > 1)
+                    strncpy(curr->description, newDesc, MAX_DESCRIPTION);
+
+                // Simpan ulang
+                int index = 1;
+                addressChapter tmp = s->chapters.head;
+                while (tmp != NULL && tmp != curr) {
+                    index++;
+                    tmp = tmp->nextChapter;
+                }
+                saveChapterWithScenes(s, curr, index);
+
+                printf("Chapter berhasil diperbarui.\n");
+                break;
+            }
+            case 6: {
+                printAllChapter(&s->chapters);
+                printf("Masukkan nomor chapter yang ingin dihapus: ");
+                int idx;
+                scanf("%d", &idx); getchar();
+                hapusChapter(s, idx);
+                break;
+            }
+
         }
-    } while (pilihan != 5);
+    } while (pilihan != 7);
 }
 
 

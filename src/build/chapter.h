@@ -40,4 +40,8 @@ void printAllChapter(const Queue *q);
 
 int getChapterCount(Queue *q);
 
+void hapusChapter(addressStory s, int index);
+
+void resaveAllChapters(addressStory s);
+
 #endif

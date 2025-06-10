@@ -326,3 +326,62 @@ void printAllChapter(const Queue *q) {
         index++;
     }
 }
+
+void hapusChapter(addressStory s, int index) {
+    if (index < 1 || isQueueEmpty(s->chapters)) {
+        printf("Index tidak valid atau queue kosong.\n");
+        return;
+    }
+
+    addressChapter curr = s->chapters.head;
+    addressChapter prev = NULL;
+
+    int currentIndex = 1;
+    while (curr != NULL && currentIndex < index) {
+        prev = curr;
+        curr = curr->nextChapter;
+        currentIndex++;
+    }
+
+    if (curr == NULL) {
+        printf("Chapter tidak ditemukan.\n");
+        return;
+    }
+
+    // Update pointer head/tail
+    if (prev == NULL) {
+        // Menghapus head
+        s->chapters.head = curr->nextChapter;
+        if (curr == s->chapters.tail) {
+            s->chapters.tail = NULL;  // hanya satu elemen
+        }
+    } else {
+        prev->nextChapter = curr->nextChapter;
+        if (curr == s->chapters.tail) {
+            s->chapters.tail = prev;
+        }
+    }
+
+    // Hapus file chapter
+    char path[200];
+    snprintf(path, sizeof(path), "../../data/%s/chapter_%d.txt", s->title, index);
+    remove(path);
+
+    // Bebaskan memori
+    free(curr);
+
+    printf("Chapter %d berhasil dihapus.\n", index);
+}
+
+void resaveAllChapters(addressStory s) {
+    // Hapus semua file lama dulu (opsional)
+    // system("rm ../../data/StoryName/chapter_*.txt");
+
+    addressChapter curr = s->chapters.head;
+    int i = 1;
+    while (curr != NULL) {
+        saveChapterWithScenes(s, curr, i);
+        i++;
+        curr = curr->nextChapter;
+    }
+}

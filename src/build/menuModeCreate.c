@@ -267,7 +267,8 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
         printf("3. Lihat Semua Scene\n");
         printf("4. Simpan Chapter ke File\n");
         printf("5. Lihat Struktur Cerita\n");
-        printf("6. Kembali\n");
+        printf("6. Edit Scene\n");
+        printf("7. Kembali\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan); getchar();
 
@@ -349,17 +350,7 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
             }
 
             case 3: {
-                addressScene temp = ch->firstScene;
-                while (temp != NULL) {
-                    printf("\n[Scene ID: %d] %s\n%s\n", temp->id, temp->title, temp->description);
-                    for (int i = 0; i < MAX_CHOICES; i++) {
-                        if (temp->choices[i].id != -1) {
-                            printf("  - %s => Scene ID %d\n", temp->choices[i].title, temp->choices[i].id);
-                        }
-                    }
-                    temp = temp->nextScene;
-                }
-                break;
+                printAllScenes(ch);
             }
             case 4:
                 saveChapterWithScenes(s, ch, chapterIndex);  // format fancy di sini
@@ -367,6 +358,40 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
             case 5:
                 printSceneStructure(ch);
                 break;
+            case 6: {
+                printAllScenes(ch);
+                int sceneID;
+
+                printf("Masukkan ID Scene yang ingin diedit: ");
+                scanf("%d", &sceneID); getchar();
+
+                addressScene scene = findSceneByID(ch, sceneID);
+                if (scene == NULL) {
+                    printf("Scene tidak ditemukan.\n");
+                    break;
+                }
+
+                printf("Judul lama: %s", scene->title);
+                printf("Deskripsi lama: %s", scene->description);
+
+                printf("Masukkan judul baru (atau tekan ENTER untuk tidak mengubah): ");
+                char newTitle[MAX_TITLE];
+                fgets(newTitle, MAX_TITLE, stdin);
+                if (newTitle[0] != '\n') {
+                    strncpy(scene->title, newTitle, MAX_TITLE);
+                }
+
+                printf("Masukkan deskripsi baru (atau tekan ENTER untuk tidak mengubah): ");
+                char newDesc[MAX_DESCRIPTION];
+                fgets(newDesc, MAX_DESCRIPTION, stdin);
+                if (newDesc[0] != '\n') {
+                    strncpy(scene->description, newDesc, MAX_DESCRIPTION);
+                }
+
+                printf("Scene berhasil diperbarui.\n");
+                break;
+            }
+
         }
-    } while (pilihan != 6);
+    } while (pilihan != 7);
 }

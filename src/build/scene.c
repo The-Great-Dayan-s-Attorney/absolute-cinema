@@ -80,3 +80,15 @@ void printSceneStructure(addressChapter ch) {
     }
 }
 
+void printAllScenes(addressChapter ch) {
+    addressScene temp = ch->firstScene;
+    while (temp != NULL) {
+        printf("\n[Scene ID: %d] %s\n%s\n", temp->id, temp->title, temp->description);
+        for (int i = 0; i < MAX_CHOICES; i++) {
+            if (temp->choices[i].id != -1) {
+                printf("  - %s => Scene ID %d\n", temp->choices[i].title, temp->choices[i].id);
+            }
+        }
+        temp = temp->nextScene;
+    }
+}

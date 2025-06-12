@@ -27,4 +27,6 @@ addressScene findSceneByID(addressChapter ch, int id);
 
 void printSceneStructure(addressChapter ch);
 
+void printAllScenes(addressChapter ch);
+
 #endif

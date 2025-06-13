@@ -92,3 +92,39 @@ void printAllScenes(addressChapter ch) {
         temp = temp->nextScene;
     }
 }
+
+bool hapusSceneDariChapter(addressChapter ch, int sceneID) {
+    addressScene prev = NULL;
+    addressScene curr = ch->firstScene;
+
+    // Cari scene dengan ID
+    while (curr != NULL && curr->id != sceneID) {
+        prev = curr;
+        curr = curr->nextScene;
+    }
+
+    if (curr == NULL) return false; // Tidak ditemukan
+
+    // Hapus referensi ke scene ini dari semua pilihan di scene lain
+    addressScene scan = ch->firstScene;
+    while (scan != NULL) {
+        for (int i = 0; i < MAX_CHOICES; i++) {
+            if (scan->choices[i].id == sceneID) {
+                scan->choices[i].id = -1;
+                scan->choices[i].nextScene = NULL;
+                scan->choices[i].title[0] = '\0';
+            }
+        }
+        scan = scan->nextScene;
+    }
+
+    // Hapus scene dari linked list
+    if (prev == NULL) {
+        ch->firstScene = curr->nextScene;
+    } else {
+        prev->nextScene = curr->nextScene;
+    }
+
+    free(curr); // Bebaskan memori
+    return true;
+}

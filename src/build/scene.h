@@ -29,4 +29,7 @@ void printSceneStructure(addressChapter ch);
 
 void printAllScenes(addressChapter ch);
 
+bool hapusSceneDariChapter(addressChapter ch, int sceneID);
+
+
 #endif

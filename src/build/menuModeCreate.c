@@ -268,7 +268,8 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
         printf("4. Simpan Chapter ke File\n");
         printf("5. Lihat Struktur Cerita\n");
         printf("6. Edit Scene\n");
-        printf("7. Kembali\n");
+        printf("7. Hapus Scene\n");
+        printf("8. Kembali\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan); getchar();
 
@@ -391,7 +392,21 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
                 printf("Scene berhasil diperbarui.\n");
                 break;
             }
+            case 7: {
+                printAllScenes(ch);
+                int sceneID;
+                printf("Masukkan ID Scene yang ingin dihapus: ");
+                scanf("%d", &sceneID); getchar();
+
+                bool success = hapusSceneDariChapter(ch, sceneID);
+                if (success) {
+                    printf("Scene dengan ID %d berhasil dihapus.\n", sceneID);
+                } else {
+                    printf("Scene tidak ditemukan atau gagal dihapus.\n");
+                }
+                break;
+            }
 
         }
-    } while (pilihan != 7);
+    } while (pilihan != 8);
 }

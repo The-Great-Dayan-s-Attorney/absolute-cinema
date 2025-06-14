@@ -6,6 +6,7 @@
 #include "chapter.h"
 #include "scene.h"
 #include "stack.h"
+#include "riwayat.h"
 
 Game* createGame() {
     Game* game = malloc(sizeof(Game));
@@ -18,6 +19,7 @@ Game* createGame() {
     game->currentScene = NULL;
     game->sceneStack = createStack();
     game->storyIndex = -1;
+    initRiwayat(&game->pilihanRiwayat);
     return game;
 }
 
@@ -104,6 +106,7 @@ void selectScene(Game* game, int choiceId) {
     for (int i = 0; i < MAX_CHOICES; i++) {
         if (game->currentScene->choices[i].id == choiceId) {
             push(game->sceneStack, game->currentScene);
+            addRiwayat(&game->pilihanRiwayat, choiceId, game->currentScene->choices[i].title);
             game->currentScene = game->currentScene->choices[i].nextScene;
             if (game->currentScene == NULL) {
                 loadChapter(game, 1); // pindah ke chapter berikutnya (sementara ke 1)
@@ -131,7 +134,7 @@ void displayScene(Game* game) {
         }
     }
 
-    printf("Masukkan 0 untuk undo\n");
+    printf("Masukkan 0 untuk undo, 99 untuk lihat riwayat\n");
     int choice;
     printf("Pilihan: ");
     scanf("%d", &choice);
@@ -139,6 +142,9 @@ void displayScene(Game* game) {
 
     if (choice == 0) {
         undoScene(game);
+    } else if (choice == 99) {
+        tampilkanRiwayat(game);
+        displayScene(game); // kembali ke scene
     } else {
         selectScene(game, choice);
     }
@@ -157,6 +163,11 @@ void undoScene(Game* game) {
     }
 }
 
+void tampilkanRiwayat(Game* game) {
+    if (game == NULL) return;
+    printRiwayat(&game->pilihanRiwayat);
+}
+
 void endGame(Game* game) {
     if (game == NULL) {
         return;
@@ -168,6 +179,7 @@ void endGame(Game* game) {
     if (game->sceneStack != NULL) {
         freeStack(game->sceneStack);
     }
+    clearRiwayat(&game->pilihanRiwayat);
     free(game);
     printf("Terima kasih telah bermain!\n");
 }

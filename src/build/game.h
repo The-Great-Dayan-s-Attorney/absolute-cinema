@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "queue.h"
 #include "stack.h"
+#include "riwayat.h"
 
 #include "convention.h"
 
@@ -17,6 +18,7 @@ typedef struct {
     addressScene currentScene;
     Stack* sceneStack; // Untuk menyimpan riwayat scene (undo)
     int storyIndex;
+    RiwayatList pilihanRiwayat;
 } Game;
 
 Game* createGame();
@@ -29,5 +31,6 @@ void undoScene(Game* game);
 void endGame(Game* game);
 void saveGameState(Game* game, char* filename);
 void loadGameState(Game* game, char* filename);
+void tampilkanRiwayat(Game* game);
 
 #endif

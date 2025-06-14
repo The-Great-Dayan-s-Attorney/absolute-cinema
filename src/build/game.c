@@ -109,7 +109,13 @@ void selectScene(Game* game, int choiceId) {
             addRiwayat(&game->pilihanRiwayat, choiceId, game->currentScene->choices[i].title);
             game->currentScene = game->currentScene->choices[i].nextScene;
             if (game->currentScene == NULL) {
-                loadChapter(game, 1); // pindah ke chapter berikutnya (sementara ke 1)
+                if (game->currentChapter->nextChapter != NULL) {
+                    game->currentChapter = game->currentChapter->nextChapter; 
+                    game->currentScene = game->currentChapter->firstScene;
+                } else {
+                    game->currentScene = NULL; // menandai akhir game
+                }
+
             } else {
                 displayScene(game);
             }
@@ -135,10 +141,16 @@ void displayScene(Game* game) {
     }
 
     printf("Masukkan 0 untuk undo, 99 untuk lihat riwayat\n");
+
     int choice;
-    printf("Pilihan: ");
-    scanf("%d", &choice);
-    getchar();
+    do {
+        printf("Pilihan: ");
+        scanf("%d", &choice);
+        getchar();
+        if (!validatePlayerInput(game->currentScene, choice)) {
+            printf("Pilihan tidak valid. Coba lagi.\n");
+        }
+    } while (!validatePlayerInput(game->currentScene, choice));
 
     if (choice == 0) {
         undoScene(game);
@@ -175,11 +187,19 @@ void endGame(Game* game) {
 
     if (game->fm != NULL) {
         free(game->fm);
+        game->fm = NULL;
     }
     if (game->sceneStack != NULL) {
         freeStack(game->sceneStack);
+        game->sceneStack = NULL;
     }
+
     clearRiwayat(&game->pilihanRiwayat);
+
+    game->currentStory = NULL;
+    game->currentChapter = NULL;
+    game->currentScene = NULL;
+
     free(game);
     printf("Terima kasih telah bermain!\n");
 }
@@ -273,6 +293,7 @@ void tampilkanMenuAwal(Game* game) {
 
         if (pilihan == 1) {
             startGame(game);
+            playerMode(game);
         } else if (pilihan == 2) {
             char filename[100];
             printf("Masukkan nama file save (tanpa ekstensi): ");
@@ -281,7 +302,7 @@ void tampilkanMenuAwal(Game* game) {
             loadGameState(game, filename);
 
             if (game->currentScene != NULL) {
-                displayScene(game);
+                playerMode(game);
             } else {
                 printf("Gagal melanjutkan game. Mungkin file tidak valid.\n");
             }
@@ -292,4 +313,28 @@ void tampilkanMenuAwal(Game* game) {
             printf("Pilihan tidak valid. Silakan coba lagi.\n");
         }
     } while (pilihan != 3);
+}
+
+void playerMode(Game* game) {
+    if (game == NULL || game->currentScene == NULL) {
+        printf("Game tidak dapat dimulai.\n");
+        return;
+    }
+
+    while (game->currentScene != NULL) {
+        displayScene(game); // akan terus nampilkan sampai selesai
+    }
+
+    printf("Permainan telah selesai!\n");
+}
+
+int validatePlayerInput(addressScene node, int choice) {
+    if (choice == 0 || choice == 99) return 1;
+
+    for (int i = 0; i < MAX_CHOICES; i++) {
+        if (node->choices[i].id == choice && node->choices[i].title[0] != '\0') {
+            return 1;
+        }
+    }
+    return 0;
 }

@@ -33,5 +33,7 @@ void saveGameState(Game* game, char* filename);
 void loadGameState(Game* game, char* filename);
 void tampilkanRiwayat(Game* game);
 void tampilkanMenuAwal(Game* game);
+void playerMode(Game* game);
+int validatePlayerInput(addressScene node, int choice);
 
 #endif

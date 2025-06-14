@@ -32,5 +32,6 @@ void endGame(Game* game);
 void saveGameState(Game* game, char* filename);
 void loadGameState(Game* game, char* filename);
 void tampilkanRiwayat(Game* game);
+void tampilkanMenuAwal(Game* game);
 
 #endif

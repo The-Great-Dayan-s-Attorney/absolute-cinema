@@ -259,3 +259,37 @@ void loadGameState(Game* game, char* filename) {
 
     printf("Status game dimuat dari: %s\n", savePath);
 }
+
+void tampilkanMenuAwal(Game* game) {
+    int pilihan;
+    do {
+        printf("\n===== MENU AWAL GAME =====\n");
+        printf("1. Mulai Game Baru\n");
+        printf("2. Lanjutkan dari Save File\n");
+        printf("3. Keluar\n");
+        printf("Masukkan pilihan (1-3): ");
+        scanf("%d", &pilihan);
+        getchar(); // Bersihkan newline dari buffer
+
+        if (pilihan == 1) {
+            startGame(game);
+        } else if (pilihan == 2) {
+            char filename[100];
+            printf("Masukkan nama file save (tanpa ekstensi): ");
+            scanf("%s", filename);
+            getchar();
+            loadGameState(game, filename);
+
+            if (game->currentScene != NULL) {
+                displayScene(game);
+            } else {
+                printf("Gagal melanjutkan game. Mungkin file tidak valid.\n");
+            }
+
+        } else if (pilihan == 3) {
+            printf("Terima kasih! Game ditutup.\n");
+        } else {
+            printf("Pilihan tidak valid. Silakan coba lagi.\n");
+        }
+    } while (pilihan != 3);
+}

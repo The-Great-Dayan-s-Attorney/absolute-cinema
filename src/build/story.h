@@ -31,4 +31,12 @@ void writeStoryToFolder(addressStory s);
 
 char* pilihStoryDariFolder(const char* basePath);
 
+void hapusStory(addressStory *listStory);
+
+void editStory(addressStory listStory);
+
+void hapusFolder(const char* path);
+
+void loadAllStories(addressStory* listStory, const char* folderPath);
+
 #endif

@@ -185,3 +185,163 @@ char* pilihStoryDariFolder(const char* basePath) {
 
     return storyNames[pilihan - 1];
 }
+
+void hapusStory(addressStory *listStory) {
+    if (*listStory == NULL) {
+        printf("Belum ada story yang bisa dihapus.\n");
+        return;
+    }
+
+    printAllStory(*listStory);
+
+    char judulHapus[100];
+    printf("Masukkan judul story yang ingin dihapus: ");
+    fgets(judulHapus, 100, stdin);
+    judulHapus[strcspn(judulHapus, "\n")] = '\0';
+
+    addressStory prev = NULL, curr = *listStory;
+    while (curr != NULL) {
+        char cleanTitle[MAX_TITLE];
+        strncpy(cleanTitle, curr->title, MAX_TITLE);
+        cleanTitle[strcspn(cleanTitle, "\n")] = '\0';  // Hapus \n dari title story
+
+        if (strcmp(cleanTitle, judulHapus) == 0) break;
+
+        prev = curr;
+        curr = curr->nextStory;
+    }
+
+
+    if (curr == NULL) {
+        printf("Story tidak ditemukan.\n");
+        return;
+    }
+
+    // Hapus dari linked list
+    if (prev == NULL) {
+        *listStory = curr->nextStory;
+    } else {
+        prev->nextStory = curr->nextStory;
+    }
+
+    // Bangun path folder
+    char folderPath[200];
+    snprintf(folderPath, sizeof(folderPath), "../../data/%s", judulHapus);
+
+    // Hapus folder dan isinya
+    #ifdef _WIN32
+        char command[256];
+        snprintf(command, sizeof(command), "rmdir /s /q \"%s\"", folderPath);
+    #else
+        char command[256];
+        snprintf(command, sizeof(command), "rm -rf \"%s\"", folderPath);
+    #endif
+
+    int result = system(command);
+    if (result == 0) {
+        printf("Story \"%s\" berhasil dihapus beserta foldernya.\n", judulHapus);
+    } else {
+        printf("Gagal menghapus folder \"%s\".\n", judulHapus);
+    }
+
+    free(curr); // bebaskan memori jika malloc digunakan
+}
+
+void editStory(addressStory listStory) {
+    printAllStory(listStory);
+
+    int index;
+    printf("Masukkan nomor story yang ingin diedit: ");
+    scanf("%d", &index); getchar();
+
+    addressStory curr = listStory;
+    int i = 1;
+    while (curr && i < index) {
+        curr = curr->nextStory;
+        i++;
+    }
+
+    if (curr == NULL) {
+        printf("Story tidak ditemukan.\n");
+        return;
+    }
+
+    // Simpan judul lama untuk hapus folder jika perlu
+    char judulLama[MAX_TITLE];
+    strncpy(judulLama, curr->title, MAX_TITLE);
+
+    printf("Judul lama: %s", curr->title);
+    printf("Deskripsi lama: %s", curr->description);
+
+    printf("Masukkan judul baru (ENTER jika tidak diubah): ");
+    char newTitle[MAX_TITLE];
+    fgets(newTitle, MAX_TITLE, stdin);
+    if (newTitle[0] != '\n') {
+        newTitle[strcspn(newTitle, "\n")] = '\0';
+        strncpy(curr->title, newTitle, MAX_TITLE);
+    }
+
+    printf("Masukkan deskripsi baru (ENTER jika tidak diubah): ");
+    char newDesc[MAX_DESCRIPTION];
+    fgets(newDesc, MAX_DESCRIPTION, stdin);
+    if (newDesc[0] != '\n') {
+        newDesc[strcspn(newDesc, "\n")] = '\0';
+        strncpy(curr->description, newDesc, MAX_DESCRIPTION);
+    }
+
+    // Hapus folder lama kalau judul berubah
+    if (strcmp(judulLama, curr->title) != 0) {
+        char path[200];
+        snprintf(path, sizeof(path), "../../data/%s", judulLama);
+        hapusFolder(path); // pastikan fungsi ini tersedia
+    }
+
+    // Tulis ulang ke folder baru
+    writeStoryToFolder(curr);
+
+    printf("Story berhasil diperbarui.\n");
+}
+
+
+
+void hapusFolder(const char* path) {
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "rmdir /s /q \"%s\"", path);
+    system(cmd);
+}
+
+
+void loadAllStories(addressStory* listStory, const char* folderPath) {
+    DIR *dir = opendir(folderPath);
+    if (dir == NULL) {
+        printf("Folder tidak ditemukan.\n");
+        return;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            char path[200];
+            snprintf(path, sizeof(path), "%s/%s/details_story.txt", folderPath, entry->d_name);
+
+            FILE *f = fopen(path, "r");
+            if (f) {
+                char line[256];
+                char title[MAX_TITLE], desc[MAX_DESCRIPTION];
+
+                fgets(line, sizeof(line), f);
+                sscanf(line, "Judul: %[^\n]", title);
+
+                fgets(line, sizeof(line), f);
+                sscanf(line, "Deskripsi: %[^\n]", desc);
+
+                fclose(f);
+
+                addressStory s = createStory(title, desc);
+                addStory(listStory, s);
+            }
+        }
+    }
+
+    closedir(dir);
+}

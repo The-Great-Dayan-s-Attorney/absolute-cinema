@@ -19,6 +19,7 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex);
 
 void mainMenuBuild() {
     addressStory listStory = NULL;
+    loadAllStories(&listStory, "../../data");
     int pilihan;
 
     do {
@@ -27,7 +28,9 @@ void mainMenuBuild() {
         printf("2. Pilih Story\n");
         printf("3. Lihat Semua Story\n");
         printf("4. Simpan Semua Story ke File\n");
-        printf("5. Keluar\n");
+        printf("5. Edit Story\n");
+        printf("6. Delete Story\n");
+        printf("7. Keluar\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan); getchar();
 
@@ -56,10 +59,6 @@ void mainMenuBuild() {
                     } else {
                         char line[256];
                         char title[100], desc[200];
-
-                        // Asumsikan format di file:
-                        // Judul: ...
-                        // Deskripsi: ...
 
                         fgets(line, sizeof(line), f);  // Judul
                         sscanf(line, "Judul: %[^\n]", title);
@@ -95,8 +94,16 @@ void mainMenuBuild() {
                 }
                 break;
             }
+            case 5: {
+                editStory(listStory);
+                break;
+            }
+            case 6: {
+                hapusStory(&listStory);
+                break;
+            }
         }
-    } while (pilihan != 5);
+    } while (pilihan != 7);
 }
 
 void menuStory(addressStory s) {
@@ -106,8 +113,6 @@ void menuStory(addressStory s) {
         loadChaptersFromFolder(s);
         loaded = 1;
     }
-
-
 
     int pilihan;
     do {

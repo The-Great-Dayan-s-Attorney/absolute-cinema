@@ -165,10 +165,14 @@ void saveChapterWithScenes(addressStory s, addressChapter ch, int chapterIndex) 
     fprintf(f, "[Scene]\n");
     addressScene temp = ch->firstScene;
     while (temp != NULL) {
+        // Buang newline dari title dan description kalau ada
+        temp->title[strcspn(temp->title, "\n")] = '\0';
+        temp->description[strcspn(temp->description, "\n")] = '\0';
+
         fprintf(f, "%d|%s|%s\n", temp->id, temp->title, temp->description);
         temp = temp->nextScene;
     }
-
+    
     fprintf(f, "\n[Choices]\n");
     temp = ch->firstScene;
     while (temp != NULL) {

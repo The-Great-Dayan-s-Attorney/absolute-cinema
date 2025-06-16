@@ -1,9 +1,0 @@
-[Judul]
-Panggilan Malams
-
-[Deskripsi]
-Malam yang tenang berubah menjadi awal dari penyelidikan berbahaya.
-
-[Scene]
-
-[Choices]

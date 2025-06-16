@@ -267,8 +267,8 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
     int sceneCounter = 1;
     do {
         printf("\n=== CHAPTER: %s ===\n", ch->title);
-        printf("1. Tambah Scene\n");
-        printf("2. Tambah Pilihan ke Scene\n");
+        printf("1. Tambah Scene Baru Sekaligus Pilihan\n");
+        printf("2. Tambah Pilihan Menuju Scene yang Sudah Ada\n");
         printf("3. Lihat Semua Scene\n");
         printf("4. Simpan Chapter ke File\n");
         printf("5. Lihat Struktur Cerita\n");
@@ -322,6 +322,7 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
             }
 
             case 2: {
+                printSceneStructure(ch);
                 int fromID, toID;
                 printf("ID Scene asal: ");
                 scanf("%d", &fromID); getchar();

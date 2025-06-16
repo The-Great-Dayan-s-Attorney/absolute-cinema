@@ -52,6 +52,7 @@ int main() {
                 }
 
                 startGame(game);
+                playerMode(game); // Loop interaksi hingga game selesai dan memproses pilihan (undo & riwayat)
                 endGame(game); // Akhiri game setelah selesai
                 break;
             }

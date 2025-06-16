@@ -250,23 +250,3 @@ void updateStoryFile(addressStory story, char* filename) {
 
     printf("File story berhasil diperbarui!\n");
 }
-
-addressStory loadAllStories() {
-    int count = 0;
-    StoryEntry* stories = listStories(&count);
-    if (stories == NULL) {
-        printf("Tidak ada story yang bisa dimuat!\n");
-        return NULL;
-    }
-
-    addressStory listStory = NULL;
-    for (int i = 0; i < count; i++) {
-        addressStory story = loadStory(stories[i].filename);
-        if (story != NULL) {
-            addStory(&listStory, story); // Asumsi addStory ada di story.c
-        }
-    }
-
-    free(stories); // Bebaskan memori sementara
-    return listStory;
-}

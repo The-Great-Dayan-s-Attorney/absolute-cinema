@@ -4,83 +4,51 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-// #include "story.h"
-// #include "chapter.h"
-// #include "queue.h"
-// #include "scene.h"
-// #include "choices.h"
-
-// #include "story.c"
-// #include "chapter.c"
-// #include "queue.c"
-// #include "scene.c"
+#include "story.h"
+#include "chapter.h"
+#include "queue.h"
+#include "scene.h"
+#include "choices.h"
+#include "game.h"
 #include "menuModeCreate.c"
 
 int main() {
-    mainMenuBuild();
+    int pilihan;
+
+    do {
+        printf("\n=== MENU UTAMA VISUAL NOVEL ===\n");
+        printf("1. Mode Build (Buat Cerita)\n");
+        printf("2. Mode Play (Mainkan Cerita)\n");
+        printf("3. Keluar\n");
+        printf("Pilihan: ");
+        scanf("%d", &pilihan);
+        getchar(); // Bersihkan newline dari buffer
+
+        switch (pilihan) {
+            case 1: {
+                // Mode Build
+                mainMenuBuild();
+                break;
+            }
+            case 2: {
+                // Mode Play
+                Game* game = createGame();
+                if (game == NULL) {
+                    printf("Gagal memulai game! Memori tidak cukup.\n");
+                    return 1;
+                }
+
+                startGame(game);
+                endGame(game); // Akhiri game setelah selesai
+                break;
+            }
+            case 3:
+                printf("Terima kasih telah menggunakan program!\n");
+                break;
+            default:
+                printf("Pilihan tidak valid! Silakan coba lagi.\n");
+        }
+    } while (pilihan != 3);
+
     return 0;
 }
-
-
-
-// int main(){
-//     addressStory ListStory = NULL;
-
-//     addStory(&ListStory , createStory("Cerita 1", "deskripsi deskripsian"));
-//     addStory(&ListStory, createStory("Cerita 2", "gitulah"));
-
-//     printAllStory(ListStory); 
-
-//     addressStory current = ListStory;
-//     while (current != NULL) {
-//         writeStoryToFolder(current); 
-//         current = current->nextStory;
-//     }
-
-//     deleteStoryByTitle(&ListStory, "Cerita 1");
-
-//     printAllStory(ListStory);
-
-//     Queue S1;
-
-//     createQueue(&S1);
-
-//     enqueue(&S1, createChapter("Chapter 1", "Deskripsi Chapter 1 lah ya"));
-
-//     enqueue(&S1, createChapter("Chapter 2", "Deskripsi Chapter 2 lah ya"));
-
-//     enqueue(&S1, createChapter("Chapter 3", "Deskripsi Chapter 3 lah ya"));
-
-//     printQueue(&S1);
-
-
-//     addressChapter ch1 = createChapter("Bab 1", "Awal petualanganmu dimulai.");
-
-//     addressScene sc1 = createScene("Hutan Gelap", "Kamu terbangun di tengah hutan yang gelap.");
-//     addressScene sc2 = createScene("Gua Tersembunyi", "Kamu melihat gua tersembunyi di balik semak.");
-//     addressScene sc3 = createScene("Danau Misterius", "Sebuah danau berkilau di bawah cahaya bulan.");
-
-//     // Hubungkan scenes ke chapter
-//     addSceneToChapter(ch1, sc1);
-//     addSceneToChapter(ch1, sc2);
-//     addSceneToChapter(ch1, sc3);
-
-//     // Tambahkan pilihan di sc1
-//     sc1->choices[0].id = 1;
-//     strncpy(sc1->choices[0].title, "Masuk ke gua", MAX_TITLE);
-//     sc1->choices[0].nextScene = sc2;
-
-//     sc1->choices[1].id = 2;
-//     strncpy(sc1->choices[1].title, "Pergi ke danau", MAX_TITLE);
-//     sc1->choices[1].nextScene = sc3;
-
-//     // Tambahkan pilihan di sc2
-//     sc2->choices[0].id = 1;
-//     strncpy(sc2->choices[0].title, "Kembali ke hutan", MAX_TITLE);
-//     sc2->choices[0].nextScene = sc1;
-
-//     // Tampilkan semua isi chapter
-//     printChapter(ch1);
-
-//     return 0;
-// }

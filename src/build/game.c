@@ -76,28 +76,6 @@ void selectStory(Game* game, int index) {
     free(stories);
 }
 
-void loadChapter(Game* game, int chapterNum) {
-    if (game == NULL || game->currentStory == NULL) {
-        return;
-    }
-
-    addressChapter current = game->currentStory->chapters.head;
-    int count = 1;
-
-    while (current != NULL && count < chapterNum) {
-        current = current->nextChapter;
-        count++;
-    }
-
-    if (current != NULL) {
-        game->currentChapter = current;
-        game->currentScene = game->currentChapter->firstScene;
-        displayScene(game);
-    } else {
-        printf("Chapter tidak ditemukan!\n");
-    }
-}
-
 void selectScene(Game* game, int choiceId) {
     if (game == NULL || game->currentScene == NULL) {
         return;

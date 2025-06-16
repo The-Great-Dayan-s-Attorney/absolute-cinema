@@ -24,7 +24,6 @@ typedef struct {
 Game* createGame();
 void startGame(Game* game);
 void selectStory(Game* game, int index);
-void loadChapter(Game* game, int chapterNum);
 void selectScene(Game* game, int choiceId);
 void displayScene(Game* game);
 void undoScene(Game* game);

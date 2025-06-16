@@ -1,17 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "story.h"
 #include "chapter.h"
 #include "queue.h"
 #include "scene.h"
 #include "choices.h"
-
-#include "story.c"
-#include "chapter.c"
-#include "queue.c"
-#include "scene.c"
 
 void menuStory(addressStory s);
 
@@ -262,7 +258,7 @@ void menuStory(addressStory s) {
                 printf("Masukkan nomor chapter yang ingin dihapus: ");
                 int idx;
                 scanf("%d", &idx); getchar();
-                hapusChapter(s, idx);
+                deleteChapter(s, idx);
                 break;
             }
 

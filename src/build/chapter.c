@@ -7,8 +7,6 @@
 #include <dirent.h>
 #include <errno.h>
 
-
-
 #include "story.h"
 #include "chapter.h"
 
@@ -26,8 +24,6 @@ addressChapter createChapter(const char* title, const char* desc) {
     }
     return ch;
 }
-
-// delete chapter harusnya
 
 void printChapter(addressChapter ch) {
     if (ch == NULL) {
@@ -105,7 +101,6 @@ void saveChapterToFile(addressStory s, addressChapter ch) {
         printf("Gagal menyimpan file chapter ke: %s\n", chapterFile);
     }
 }
-
 
 addressChapter pilihChapter(Queue *q) {
     if (q->head == NULL) {
@@ -188,24 +183,27 @@ void saveChapterWithScenes(addressStory s, addressChapter ch, int chapterIndex) 
     printf("Chapter %d berhasil disimpan.\n", chapterIndex);
 }
 
-
 addressChapter loadChapterFromFile(const char *filepath) {
     FILE *f = fopen(filepath, "r");
-    if (!f) return NULL;
+    if (!f) {
+        perror("Gagal membuka file");
+        return NULL;
+    }
+
+    addressChapter ch = createChapter("", "");
+    if (!ch) {
+        fclose(f);
+        return NULL;
+    }
 
     char line[256];
-    addressChapter ch = createChapter("", "");
     addressScene lastScene = NULL;
     addressScene sceneMap[100] = { NULL };
-
     enum { NONE, JUDUL, DESKRIPSI, SCENE, CHOICES } section = NONE;
-    int expectingDesc = 0;          // Flag untuk menunggu baris deskripsi scene
-    int currentId = 0;
-    char currentTitle[MAX_TITLE] = "";
 
     while (fgets(line, sizeof(line), f)) {
-        // Hilangkan newline di akhir line
         line[strcspn(line, "\n")] = '\0';
+        if (line[0] == '\0') continue;
 
         if (strncmp(line, "[Judul]", 7) == 0) {
             section = JUDUL;
@@ -215,43 +213,28 @@ addressChapter loadChapterFromFile(const char *filepath) {
             continue;
         } else if (strncmp(line, "[Scene]", 7) == 0) {
             section = SCENE;
-            expectingDesc = 0; // reset flag
             continue;
         } else if (strncmp(line, "[Choices]", 9) == 0) {
             section = CHOICES;
             continue;
         }
 
-            if (section == JUDUL) {
-                if (strlen(line) == 0) continue;  // skip baris kosong
-                strncpy(ch->title, line, MAX_TITLE);
-                ch->title[MAX_TITLE - 1] = '\0';
-                printf("DEBUG: Judul chapter = '%s'\n", ch->title);
-            } else if (section == DESKRIPSI) {
-                if (strlen(line) == 0) continue;  // skip baris kosong
-                strncpy(ch->description, line, MAX_DESCRIPTION);
-                ch->description[MAX_DESCRIPTION - 1] = '\0';
-                printf("DEBUG: Deskripsi chapter = '%s'\n", ch->description);
-            } else if (section == SCENE) {
-            if (!expectingDesc) {
-                // Baris pertama scene: format "ID|Judul"
-                if (sscanf(line, "%d|%[^\n]", &currentId, currentTitle) == 2) {
-                    expectingDesc = 1; // next line adalah deskripsi
-                }
-            } else {
-                // Baris kedua scene: format "|Deskripsi"
-                if (line[0] == '|') {
-                    char *desc = line + 1;
-                    // Buat scene baru
-                    addressScene sc = createScene(currentTitle, desc, currentId);
-                    sc->id = currentId;
-                    sceneMap[currentId] = sc;
-                    if (lastScene) lastScene->nextScene = sc;
-                    else ch->firstScene = sc;
-                    lastScene = sc;
-
-                    expectingDesc = 0; // reset flag
-                }
+        if (section == JUDUL) {
+            strncpy(ch->title, line, MAX_TITLE - 1);
+            ch->title[MAX_TITLE - 1] = '\0';
+        } else if (section == DESKRIPSI) {
+            strncpy(ch->description, line, MAX_DESCRIPTION - 1);
+            ch->description[MAX_DESCRIPTION - 1] = '\0';
+        } else if (section == SCENE) {
+            int id;
+            char title[MAX_TITLE], desc[MAX_DESCRIPTION];
+            if (sscanf(line, "%d|%[^|]|%[^\n]", &id, title, desc) == 3) {
+                addressScene sc = createScene(title, desc, id);
+                if (!sc) continue;
+                sceneMap[id] = sc;
+                if (lastScene) lastScene->nextScene = sc;
+                else ch->firstScene = sc;
+                lastScene = sc;
             }
         } else if (section == CHOICES) {
             int fromId, toId;
@@ -263,7 +246,8 @@ addressChapter loadChapterFromFile(const char *filepath) {
                     for (int i = 0; i < MAX_CHOICES; i++) {
                         if (from->choices[i].id == -1) {
                             from->choices[i].id = i + 1;
-                            strcpy(from->choices[i].title, choiceTitle);
+                            strncpy(from->choices[i].title, choiceTitle, MAX_TITLE - 1);
+                            from->choices[i].title[MAX_TITLE - 1] = '\0';
                             from->choices[i].nextScene = to;
                             break;
                         }
@@ -276,9 +260,6 @@ addressChapter loadChapterFromFile(const char *filepath) {
     fclose(f);
     return ch;
 }
-
-
-
 
 void loadChaptersFromFolder(addressStory s) {
     char folderPath[150];
@@ -331,7 +312,7 @@ void printAllChapter(const Queue *q) {
     }
 }
 
-void hapusChapter(addressStory s, int index) {
+void deleteChapter(addressStory s, int index) {
     if (index < 1 || isQueueEmpty(s->chapters)) {
         printf("Index tidak valid atau queue kosong.\n");
         return;
@@ -354,7 +335,6 @@ void hapusChapter(addressStory s, int index) {
 
     // Update pointer head/tail
     if (prev == NULL) {
-        // Menghapus head
         s->chapters.head = curr->nextChapter;
         if (curr == s->chapters.tail) {
             s->chapters.tail = NULL;  // hanya satu elemen
@@ -389,7 +369,6 @@ void resaveAllChapters(addressStory s) {
         curr = curr->nextChapter;
     }
 }
-
 
 addressChapter loadChapter(addressStory s, int chapterIndex) {
     char filePath[200];
@@ -452,5 +431,3 @@ addressChapter loadChapter(addressStory s, int chapterIndex) {
     fclose(f);
     return ch;
 }
-
-

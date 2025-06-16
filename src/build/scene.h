@@ -2,7 +2,6 @@
 #define SCENE_H
 
 #include "convention.h"
-#include "scene.h"
 #include "choices.h"
 #include "chapter.h"
 #include "story.h"
@@ -31,8 +30,5 @@ void printSceneStructure(addressChapter ch);
 void printAllScenes(addressChapter ch);
 
 bool hapusSceneDariChapter(addressChapter ch, int sceneID);
-
-
-
 
 #endif

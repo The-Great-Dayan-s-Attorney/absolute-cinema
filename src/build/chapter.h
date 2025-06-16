@@ -23,6 +23,7 @@ typedef struct Chapter{
 addressChapter createChapter(const char *title, const char *desc);
 
 // delete chapter
+void deleteChapter(addressStory s, int index);
 
 void printChapter(addressChapter ch);
 
@@ -39,8 +40,6 @@ void loadChaptersFromFolder(addressStory s);
 void printAllChapter(const Queue *q);
 
 int getChapterCount(Queue *q);
-
-void hapusChapter(addressStory s, int index);
 
 void resaveAllChapters(addressStory s);
 

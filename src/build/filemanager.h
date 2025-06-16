@@ -23,6 +23,5 @@ StoryEntry* listStories(int* count);
 int validateFile(char* filename);
 void deleteStory(char* filename);
 void updateStoryFile(addressStory story, char* filename);
-addressStory loadAllStories();
 
 #endif

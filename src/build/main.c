@@ -10,7 +10,20 @@
 #include "scene.h"
 #include "choices.h"
 #include "game.h"
+#include "filemanager.h"
+#include "stack.h"
+#include "riwayat.h"
+
 #include "menuModeCreate.c"
+#include "story.c"
+#include "chapter.c"
+#include "scene.c"
+#include "queue.c"
+#include "game.c"
+#include "filemanager.c"
+#include "stack.c"
+#include "riwayat.c"
+
 
 int main() {
     int pilihan;

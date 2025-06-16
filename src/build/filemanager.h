@@ -16,6 +16,7 @@ typedef struct FileManager {
     int dummy;
 } FileManager;
 
+static void trim(char* str);
 FileManager* createFileManager();
 void saveStory(addressStory story, char* filename);
 addressStory loadStory(char* filename);

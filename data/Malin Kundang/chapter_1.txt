@@ -1,19 +1,14 @@
 [Judul]
-madoia
+begining
 
 
 [Deskripsi]
-aeoidaeo
+aoidj
 
 
 [Scene]
-1|aodija|aediojae
-2|aoeidhaoei|oaiejdioa
-3|aowidjawionae|cbuaech
-4|coaeiciae|aodebu
-5|cboaeucb|aeoudha
+1|eoijaiof|aeofhaeio
+2|aeoifae|aoeifhae
 
 [Choices]
-1|eauicbia|2
-3|aeodhaeoi|4
-3|aeodhoiae|5
+1|aeofihae|2

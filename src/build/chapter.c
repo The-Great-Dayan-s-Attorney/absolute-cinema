@@ -172,7 +172,7 @@ void saveChapterWithScenes(addressStory s, addressChapter ch, int chapterIndex) 
         fprintf(f, "%d|%s|%s\n", temp->id, temp->title, temp->description);
         temp = temp->nextScene;
     }
-    
+
     fprintf(f, "\n[Choices]\n");
     temp = ch->firstScene;
     while (temp != NULL) {
@@ -389,4 +389,68 @@ void resaveAllChapters(addressStory s) {
         curr = curr->nextChapter;
     }
 }
+
+
+addressChapter loadChapter(addressStory s, int chapterIndex) {
+    char filePath[200];
+    snprintf(filePath, sizeof(filePath), "../../data/%s/chapter_%d.txt", s->title, chapterIndex);
+
+    FILE *f = fopen(filePath, "r");
+    if (!f) {
+        printf("Gagal membuka file: %s\n", filePath);
+        return NULL;
+    }
+
+    addressChapter ch = createChapter("", ""); // placeholder, akan diisi dari file
+    char line[256];
+
+    // Baca [Judul]
+    fgets(line, sizeof(line), f); // [Judul]
+    fgets(ch->title, MAX_TITLE, f); ch->title[strcspn(ch->title, "\n")] = '\0';
+
+    // Baca [Deskripsi]
+    fgets(line, sizeof(line), f); // newline kosong
+    fgets(line, sizeof(line), f); // [Deskripsi]
+    fgets(ch->description, MAX_DESCRIPTION, f); ch->description[strcspn(ch->description, "\n")] = '\0';
+
+    // Baca [Scene]
+    fgets(line, sizeof(line), f); // newline kosong
+    fgets(line, sizeof(line), f); // [Scene]
+
+    while (fgets(line, sizeof(line), f)) {
+        if (strncmp(line, "[Choices]", 9) == 0) break;
+
+        int id;
+        char title[MAX_TITLE], desc[MAX_DESCRIPTION];
+        sscanf(line, "%d|%[^|]|%[^\n]", &id, title, desc);
+
+        addressScene sc = createScene(title, desc, id);
+        addSceneToChapter(ch, sc);
+    }
+
+    // Baca [Choices]
+    while (fgets(line, sizeof(line), f)) {
+        int fromID, toID;
+        char choiceTitle[MAX_TITLE];
+        sscanf(line, "%d|%[^|]|%d", &fromID, choiceTitle, &toID);
+
+        addressScene fromScene = findSceneByID(ch, fromID);
+        addressScene toScene = findSceneByID(ch, toID);
+
+        if (fromScene && toScene) {
+            for (int i = 0; i < MAX_CHOICES; i++) {
+                if (fromScene->choices[i].id == -1) {
+                    fromScene->choices[i].id = toID;
+                    strcpy(fromScene->choices[i].title, choiceTitle);
+                    fromScene->choices[i].nextScene = toScene;
+                    break;
+                }
+            }
+        }
+    }
+
+    fclose(f);
+    return ch;
+}
+
 

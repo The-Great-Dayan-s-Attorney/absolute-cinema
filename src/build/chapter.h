@@ -44,4 +44,6 @@ void hapusChapter(addressStory s, int index);
 
 void resaveAllChapters(addressStory s);
 
+addressChapter loadChapter(addressStory s, int chapterIndex);
+
 #endif

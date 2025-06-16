@@ -187,7 +187,16 @@ void menuStory(addressStory s) {
                     curr = curr->nextChapter;
                 }
 
-                menuChapter(s, curr, pilihChapter);
+
+                // menuChapter(s, curr, pilihChapter);
+
+                addressChapter ch = loadChapter(s, pilihChapter);
+                    if (ch != NULL) {
+                        menuChapter(s, ch, pilihChapter);
+                    } else {
+                        printf("Gagal memuat chapter.\n");
+                    }
+
                 break;
             }
 

@@ -5,6 +5,7 @@
 #include "scene.h"
 #include "chapter.h"
 #include "choices.h"
+#include "story.h"
 
 
 addressScene createScene(const char *title, const char *desc, int id) {

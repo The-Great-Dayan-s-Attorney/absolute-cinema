@@ -12,9 +12,13 @@
 #include "scene.h"
 
 // Helper untuk menghapus newline
-void trim(char* str) {
-    size_t len = strlen(str);
-    if (len > 0 && str[len - 1] == '\n') str[len - 1] = '\0';
+void trim(char *str) {
+    char *end;
+    while (isspace((unsigned char)*str)) str++;
+    if (*str == 0) return;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    *(end + 1) = 0;
 }
 
 FileManager* createFileManager() {

@@ -1,9 +1,6 @@
 [Judul]
 Permulaan
-
 [Deskripsi]
 Ica muncul dalam hidup Aang yang sedang dilanda banyak masalah. Aang mulai merasakan adanya harapan untuk terus melanjutkan hidup setelah bertemu dengan Ica.
-
 [Scene]
-
 [Choices]

@@ -1,14 +1,11 @@
 [Judul]
 Pencarian di Lembah
-
 [Deskripsi]
 Aang memasuki Lembah Cahaya, tempat di mana Lira dikutuk. Angin berbisik rahasia kuno.
-
 [Scene]
 0|Menemukan Petunjuk|Aang menemukan gulungan tua yang menunjukkan arah ke air terjun.
 1|Air Terjun Misterius|Aang tiba di air terjun, mendengar suara Lira yang memanggil.
 2|Sungai Bercahaya|Aang mengikuti sungai yang memancarkan cahaya magis.
-
 [Choices]
 0|Ikuti Gulungan|1
 0|Lewati Gulungan|2

@@ -31,6 +31,11 @@ A CLI-based visual novel system that allows users to play and create branching s
   </a>
 </div>
 
+## Requirements
+- Compiler GCC (GNU Compiler Collection) or
+- GCC Compiler: Version supporting C99 standard
+- Library standar C
+
 ## Getting Started
 
 1. Clone the repository:
@@ -38,15 +43,41 @@ A CLI-based visual novel system that allows users to play and create branching s
     ```bash
     git clone https://github.com/The-Great-Dayan-s-Attorney/absolute-cinema
     ```
+2. Buka terminal powershell
 
-## Features
+3. Masuk ke dalam direktori hasil clone github :
+
+   ```bash
+    ../absolute-cinema/src/build/
+   ```
+
+5. Kemudian jalankan:
+
+    ```bash
+    gcc main.c -o main
+    ```
+    
+6. Lalu:
+
+     ```bash
+    .\main
+    ```
+   
+## Struktur Data yang Digunakan
+| No | Struktur Data       | Aplikasi dalam Sistem                |
+|----|---------------------|-------------------------------------|
+| 1  | Array               | Choices dengan maksimal 4 choice    |
+| 2  | Linked List         | Chapter, Scene, Story               |
+| 3  | Queue               | Antrian Chapter         |
+| 4  | Stack               | Undo Scene                    |
+| 5  | Non-Binary Tree     | Struktur percabangan tiap scene dan choice|
 
 ### Game Modes
 
-- **Creator Mode**: Classic two-player mode
-- **Player Mode**: Challenge AI opponents of varying difficulty
+- **Creator Mode**: Mode untuk membuat story
+- **Player Mode**: Mode untuk memainkan story
 
-### 🎮 Game Features
+### Game Features
 
 - 🧩 **Multi-Story Support**  
   Create and manage multiple stories, each with a unique title and description.
@@ -111,8 +142,6 @@ A CLI-based visual novel system that allows users to play and create branching s
    - Kamu bisa melihat struktur cerita (scene dan hubungan antar scene).
    - Story disimpan ke dalam file teks untuk dilanjutkan atau dimainkan nanti.
 
----
-
 ### ▶️ Masuk ke Menu Play
 
 1. **Pilih `2. Play` di Menu Utama**
@@ -135,8 +164,6 @@ A CLI-based visual novel system that allows users to play and create branching s
 
 6. **Lihat Riwayat**
    - Kamu bisa melihat seluruh pilihan yang pernah kamu ambil selama permainan berjalan.
-
----
 
 ## 📁 Project Structure
 

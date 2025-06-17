@@ -22,27 +22,14 @@ typedef struct Chapter{
 
 addressChapter createChapter(const char *title, const char *desc);
 
-// delete chapter
 void deleteChapter(addressStory s, int index);
 
 void printChapter(addressChapter ch);
 
-void saveChapterToFile(addressStory s, addressChapter ch);
-
 addressChapter pilihChapter(Queue *q);
-
-void saveChapterWithScenes(addressStory s, addressChapter ch, int chapterIndex);
-
-addressChapter loadChapterFromFile(const char *filepath);
-
-void loadChaptersFromFolder(addressStory s);
 
 void printAllChapter(const Queue *q);
 
 int getChapterCount(Queue *q);
-
-void resaveAllChapters(addressStory s);
-
-addressChapter loadChapter(addressStory s, int chapterIndex);
 
 #endif

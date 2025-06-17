@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": ".",
-      "program": "C:/Tugas-Besar-SDA/absolute-cinema/src/build/main.exe",
+      "cwd": "d:/absolute-cinema/src/build",
+      "program": "d:/absolute-cinema/src/build/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -9,6 +9,7 @@
 
 #include "story.h"
 #include "chapter.h"
+#include "filemanager.h"
 
 addressChapter createChapter(const char* title, const char* desc) {
     addressChapter ch = (addressChapter)malloc(sizeof(Chapter));
@@ -43,7 +44,6 @@ void printChapter(addressChapter ch) {
         printf("\nScene %d: %s\n", sceneIndex++, currentScene->title);
         printf("%s\n", currentScene->description);
 
-        // Tampilkan pilihan
         for (int i = 0; i < MAX_CHOICES; i++) {
             if (currentScene->choices[i].id != -1 &&
                 currentScene->choices[i].title[0] != '\0' &&
@@ -62,46 +62,6 @@ void printChapter(addressChapter ch) {
     printf("\n--- Akhir Chapter ---\n");
 }
 
-void saveChapterToFile(addressStory s, addressChapter ch) {
-    if (s == NULL || ch == NULL) return;
-
-    // Hitung nomor chapter
-    int count = 1;
-    addressChapter temp = s->chapters.head;
-    while (temp != NULL && temp != ch) {
-        count++;
-        temp = temp->nextChapter;
-    }
-
-    char folderPath[150];
-    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
-    folderPath[strcspn(folderPath, "\n")] = '\0';
-
-    if (mkdir("data") != 0 && errno != EEXIST) {
-        perror("Gagal membuat folder data");
-        return;
-    }
-
-    if (mkdir(folderPath) != 0 && errno != EEXIST) {
-        perror("Gagal membuat folder story");
-        return;
-    }
-
-    // Path file
-    char chapterFile[200];
-    snprintf(chapterFile, sizeof(chapterFile), "%s/chapter_%d.txt", folderPath, count);
-
-    FILE *cf = fopen(chapterFile, "w");
-    if (cf != NULL) {
-        fprintf(cf, "Title: %s", ch->title);
-        fprintf(cf, "Description: %s", ch->description);
-        fclose(cf);
-        printf("Chapter disimpan ke: %s\n", chapterFile);
-    } else {
-        printf("Gagal menyimpan file chapter ke: %s\n", chapterFile);
-    }
-}
-
 addressChapter pilihChapter(Queue *q) {
     if (q->head == NULL) {
         printf("Belum ada chapter.\n");
@@ -112,7 +72,7 @@ addressChapter pilihChapter(Queue *q) {
     int index = 1;
     addressChapter curr = q->head;
     while (curr != NULL) {
-        printf("%d. %s", index, curr->title);  // title sudah ada \n dari fgets
+        printf("%d. %s", index, curr->title);
         curr = curr->nextChapter;
         index++;
     }
@@ -134,153 +94,6 @@ addressChapter pilihChapter(Queue *q) {
     return curr;
 }
 
-void saveChapterWithScenes(addressStory s, addressChapter ch, int chapterIndex) {
-    char folderPath[150], filePath[200];
-    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
-    snprintf(filePath, sizeof(filePath), "%s/chapter_%d.txt", folderPath, chapterIndex);
-
-    if (mkdir("data") != 0 && errno != EEXIST) {
-        perror("Gagal membuat folder data");
-        return;
-    }
-
-    if (mkdir(folderPath) != 0 && errno != EEXIST) {
-        perror("Gagal membuat folder story");
-        return;
-    }
-
-    FILE *f = fopen(filePath, "w");
-    if (!f) return;
-
-    // Simpan judul dan deskripsi
-    fprintf(f, "[Judul]\n%s\n\n", ch->title);
-    fprintf(f, "[Deskripsi]\n%s\n\n", ch->description);
-
-    // Simpan scene
-    fprintf(f, "[Scene]\n");
-    addressScene temp = ch->firstScene;
-    while (temp != NULL) {
-        // Buang newline dari title dan description kalau ada
-        temp->title[strcspn(temp->title, "\n")] = '\0';
-        temp->description[strcspn(temp->description, "\n")] = '\0';
-
-        fprintf(f, "%d|%s|%s\n", temp->id, temp->title, temp->description);
-        temp = temp->nextScene;
-    }
-
-    fprintf(f, "\n[Choices]\n");
-    temp = ch->firstScene;
-    while (temp != NULL) {
-        for (int i = 0; i < MAX_CHOICES; i++) {
-            if (temp->choices[i].id != -1 && temp->choices[i].nextScene != NULL) {
-                fprintf(f, "%d|%s|%d\n", temp->id, temp->choices[i].title, temp->choices[i].nextScene->id);
-            }
-        }
-        temp = temp->nextScene;
-    }
-
-    fclose(f);
-    printf("Chapter %d berhasil disimpan.\n", chapterIndex);
-}
-
-addressChapter loadChapterFromFile(const char *filepath) {
-    FILE *f = fopen(filepath, "r");
-    if (!f) {
-        perror("Gagal membuka file");
-        return NULL;
-    }
-
-    addressChapter ch = createChapter("", "");
-    if (!ch) {
-        fclose(f);
-        return NULL;
-    }
-
-    char line[256];
-    addressScene lastScene = NULL;
-    addressScene sceneMap[100] = { NULL };
-    enum { NONE, JUDUL, DESKRIPSI, SCENE, CHOICES } section = NONE;
-
-    while (fgets(line, sizeof(line), f)) {
-        line[strcspn(line, "\n")] = '\0';
-        if (line[0] == '\0') continue;
-
-        if (strncmp(line, "[Judul]", 7) == 0) {
-            section = JUDUL;
-            continue;
-        } else if (strncmp(line, "[Deskripsi]", 11) == 0) {
-            section = DESKRIPSI;
-            continue;
-        } else if (strncmp(line, "[Scene]", 7) == 0) {
-            section = SCENE;
-            continue;
-        } else if (strncmp(line, "[Choices]", 9) == 0) {
-            section = CHOICES;
-            continue;
-        }
-
-        if (section == JUDUL) {
-            strncpy(ch->title, line, MAX_TITLE - 1);
-            ch->title[MAX_TITLE - 1] = '\0';
-        } else if (section == DESKRIPSI) {
-            strncpy(ch->description, line, MAX_DESCRIPTION - 1);
-            ch->description[MAX_DESCRIPTION - 1] = '\0';
-        } else if (section == SCENE) {
-            int id;
-            char title[MAX_TITLE], desc[MAX_DESCRIPTION];
-            if (sscanf(line, "%d|%[^|]|%[^\n]", &id, title, desc) == 3) {
-                addressScene sc = createScene(title, desc, id);
-                if (!sc) continue;
-                sceneMap[id] = sc;
-                if (lastScene) lastScene->nextScene = sc;
-                else ch->firstScene = sc;
-                lastScene = sc;
-            }
-        } else if (section == CHOICES) {
-            int fromId, toId;
-            char choiceTitle[MAX_TITLE];
-            if (sscanf(line, "%d|%[^|]|%d", &fromId, choiceTitle, &toId) == 3) {
-                addressScene from = sceneMap[fromId];
-                addressScene to = sceneMap[toId];
-                if (from && to) {
-                    for (int i = 0; i < MAX_CHOICES; i++) {
-                        if (from->choices[i].id == -1) {
-                            from->choices[i].id = i + 1;
-                            strncpy(from->choices[i].title, choiceTitle, MAX_TITLE - 1);
-                            from->choices[i].title[MAX_TITLE - 1] = '\0';
-                            from->choices[i].nextScene = to;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fclose(f);
-    return ch;
-}
-
-void loadChaptersFromFolder(addressStory s) {
-    char folderPath[150];
-    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
-    folderPath[strcspn(folderPath, "\n")] = '\0';
-
-    DIR *dir = opendir(folderPath);
-    if (!dir) return;
-
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (strstr(entry->d_name, "chapter_") && strstr(entry->d_name, ".txt")) {
-            char path[200];
-            snprintf(path, sizeof(path), "%s/%s", folderPath, entry->d_name);
-            addressChapter ch = loadChapterFromFile(path);
-            if (ch != NULL) enqueue(&s->chapters, ch);
-        }
-    }
-    closedir(dir);
-}
-
 void printAllChapter(const Queue *q) {
     if (isQueueEmpty(*q)) {
         printf("\nBelum ada chapter yang tersedia.\n");
@@ -293,7 +106,6 @@ void printAllChapter(const Queue *q) {
     printf("\n=== DAFTAR CHAPTER ===\n\n");
 
     while (current != NULL) {
-        // Bersihkan newline
         char titleClean[MAX_TITLE];
         char descClean[MAX_DESCRIPTION];
         strncpy(titleClean, current->title, MAX_TITLE);
@@ -333,11 +145,10 @@ void deleteChapter(addressStory s, int index) {
         return;
     }
 
-    // Update pointer head/tail
     if (prev == NULL) {
         s->chapters.head = curr->nextChapter;
         if (curr == s->chapters.tail) {
-            s->chapters.tail = NULL;  // hanya satu elemen
+            s->chapters.tail = NULL;
         }
     } else {
         prev->nextChapter = curr->nextChapter;
@@ -346,88 +157,21 @@ void deleteChapter(addressStory s, int index) {
         }
     }
 
-    // Hapus file chapter
     char path[200];
     snprintf(path, sizeof(path), "../../data/%s/chapter_%d.txt", s->title, index);
     remove(path);
 
-    // Bebaskan memori
     free(curr);
 
     printf("Chapter %d berhasil dihapus.\n", index);
 }
 
-void resaveAllChapters(addressStory s) {
-    // Hapus semua file lama dulu (opsional)
-    // system("rm ../../data/StoryName/chapter_*.txt");
-
-    addressChapter curr = s->chapters.head;
-    int i = 1;
+int getChapterCount(Queue *q) {
+    int count = 0;
+    addressChapter curr = q->head;
     while (curr != NULL) {
-        saveChapterWithScenes(s, curr, i);
-        i++;
+        count++;
         curr = curr->nextChapter;
     }
-}
-
-addressChapter loadChapter(addressStory s, int chapterIndex) {
-    char filePath[200];
-    snprintf(filePath, sizeof(filePath), "../../data/%s/chapter_%d.txt", s->title, chapterIndex);
-
-    FILE *f = fopen(filePath, "r");
-    if (!f) {
-        printf("Gagal membuka file: %s\n", filePath);
-        return NULL;
-    }
-
-    addressChapter ch = createChapter("", ""); // placeholder, akan diisi dari file
-    char line[256];
-
-    // Baca [Judul]
-    fgets(line, sizeof(line), f); // [Judul]
-    fgets(ch->title, MAX_TITLE, f); ch->title[strcspn(ch->title, "\n")] = '\0';
-
-    // Baca [Deskripsi]
-    fgets(line, sizeof(line), f); // newline kosong
-    fgets(line, sizeof(line), f); // [Deskripsi]
-    fgets(ch->description, MAX_DESCRIPTION, f); ch->description[strcspn(ch->description, "\n")] = '\0';
-
-    // Baca [Scene]
-    fgets(line, sizeof(line), f); // newline kosong
-    fgets(line, sizeof(line), f); // [Scene]
-
-    while (fgets(line, sizeof(line), f)) {
-        if (strncmp(line, "[Choices]", 9) == 0) break;
-
-        int id;
-        char title[MAX_TITLE], desc[MAX_DESCRIPTION];
-        sscanf(line, "%d|%[^|]|%[^\n]", &id, title, desc);
-
-        addressScene sc = createScene(title, desc, id);
-        addSceneToChapter(ch, sc);
-    }
-
-    // Baca [Choices]
-    while (fgets(line, sizeof(line), f)) {
-        int fromID, toID;
-        char choiceTitle[MAX_TITLE];
-        sscanf(line, "%d|%[^|]|%d", &fromID, choiceTitle, &toID);
-
-        addressScene fromScene = findSceneByID(ch, fromID);
-        addressScene toScene = findSceneByID(ch, toID);
-
-        if (fromScene && toScene) {
-            for (int i = 0; i < MAX_CHOICES; i++) {
-                if (fromScene->choices[i].id == -1) {
-                    fromScene->choices[i].id = toID;
-                    strcpy(fromScene->choices[i].title, choiceTitle);
-                    fromScene->choices[i].nextScene = toScene;
-                    break;
-                }
-            }
-        }
-    }
-
-    fclose(f);
-    return ch;
+    return count;
 }

@@ -18,8 +18,15 @@ typedef struct FileManager {
 
 static void trim(char* str);
 FileManager* createFileManager();
-void saveStory(addressStory story, char* filename);
-addressStory loadStory(char* filename);
+void fm_save_story(addressStory s);
+void fm_save_chapter(addressStory s, addressChapter ch);
+void fm_save_chapter_with_scenes(addressStory s, addressChapter ch, int chapterIndex);
+addressStory fm_load_story(char* filename);
+addressChapter fm_load_chapter_from_file(const char *filepath);
+void fm_load_chapters_from_folder(addressStory s);
+void fm_load_all_stories(addressStory* listStory, const char* folderPath);
+addressChapter fm_load_chapter(addressStory s, int chapterIndex);
+void fm_resave_all_chapters(addressStory s);
 StoryEntry* listStories(int* count);
 int validateFile(char* filename);
 void deleteStory(char* filename);

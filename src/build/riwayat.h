@@ -1,29 +1,22 @@
 #ifndef RIWAYAT_H
 #define RIWAYAT_H
 
-#define MAX_TITLE 100
+#include "convention.h"
 
-typedef struct Riwayat {
+typedef struct RiwayatNode* addressRiwayat;
+typedef struct RiwayatNode {
     int id;
     char pilihan[MAX_TITLE];
-    struct Riwayat* next;
-} Riwayat;
+    addressRiwayat next;
+} RiwayatNode;
 
 typedef struct {
-    Riwayat* head;
-    Riwayat* tail;
+    addressRiwayat first;
 } RiwayatList;
 
-// Inisialisasi list kosong
 void initRiwayat(RiwayatList* list);
-
-// Tambah riwayat pilihan ke akhir list
 void addRiwayat(RiwayatList* list, int id, const char* pilihan);
-
-// Menampilkan seluruh riwayat
-void printRiwayat(RiwayatList* list);
-
-// Membersihkan semua node riwayat
 void clearRiwayat(RiwayatList* list);
+void printRiwayat(RiwayatList* list);
 
 #endif

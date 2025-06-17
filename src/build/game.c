@@ -1,318 +1,288 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "game.h"
 #include "filemanager.h"
-#include "story.h"
-#include "chapter.h"
-#include "scene.h"
-#include "stack.h"
-#include "riwayat.h"
 
 Game* createGame() {
-    Game* game = malloc(sizeof(Game));
-    if (game == NULL) {
-        return NULL;
-    }
+    Game* game = (Game*)malloc(sizeof(Game));
+    if (game == NULL) return NULL;
+
     game->fm = createFileManager();
     game->currentStory = NULL;
     game->currentChapter = NULL;
     game->currentScene = NULL;
-    game->sceneStack = createStack();
+    createStack(&game->sceneStack);
     game->storyIndex = -1;
     initRiwayat(&game->pilihanRiwayat);
+
     return game;
 }
 
 void startGame(Game* game) {
-    if (game == NULL) {
-        return;
-    }
-   
-    int count = 0;
-    StoryEntry* stories = listStories(&count);
+    tampilkanMenuAwal(game);
+}
 
-    if (stories == NULL) {
-        printf("Tidak ada cerita yang tersedia!\n");
+void selectStory(Game* game) {
+    int count;
+    StoryEntry* stories = listStories(&count);
+    if (count == 0) {
+        printf("Tidak ada cerita yang tersedia.\n");
         return;
     }
-    
-    printf("\n=== DAFTAR CERITA TERSEDIA ===\n");
+
+    printf("\n=== PILIH CERITA ===\n");
     for (int i = 0; i < count; i++) {
-        printf("%d. %s (Filename: %s)\n", i + 1, stories[i].title, stories[i].filename);
+        printf("%d. %s\n", i + 1, stories[i].title);
     }
 
     int choice;
-    printf("Masukkan pilihan cerita: ");
-    scanf("%d", &choice);
-    getchar(); // bersihin new line
-    free(stories);
-    selectStory(game, choice - 1);
-}
-
-void selectStory(Game* game, int index) {
-    if (game == NULL) {
-        return;
-    }
-
-    int count = 0;
-    StoryEntry* stories = listStories(&count);
-
-    if (index < 0 || index >= count) {
-        printf("Cerita tidak ada!\n");
+    printf("Masukkan nomor cerita: ");
+    scanf("%d", &choice); getchar();
+    if (choice < 1 || choice > count) {
+        printf("Pilihan tidak valid.\n");
         free(stories);
         return;
-    } 
-    
-    StoryEntry nama_cerita;
-    nama_cerita = stories[index];
-
-    game->currentStory = loadStory(nama_cerita.filename);
-    if (game->currentStory != NULL) {
-        game->currentChapter = game->currentStory->chapters.head;
-        game->currentScene = (game->currentChapter != NULL) ? game->currentChapter->firstScene : NULL;
-        game->storyIndex = index;
-        displayScene(game);
     }
-    free(stories);
-}
 
-void selectScene(Game* game, int choiceId) {
-    if (game == NULL || game->currentScene == NULL) {
+    game->storyIndex = choice - 1;
+    game->currentStory = fm_load_story(stories[game->storyIndex].filename);
+    free(stories);
+
+    if (game->currentStory == NULL) {
+        printf("Gagal memuat cerita.\n");
         return;
     }
 
-    for (int i = 0; i < MAX_CHOICES; i++) {
-        if (game->currentScene->choices[i].id == choiceId) {
-            push(game->sceneStack, game->currentScene);
-            addRiwayat(&game->pilihanRiwayat, choiceId, game->currentScene->choices[i].title);
-            game->currentScene = game->currentScene->choices[i].nextScene;
-            if (game->currentScene == NULL) {
-                if (game->currentChapter->nextChapter != NULL) {
-                    game->currentChapter = game->currentChapter->nextChapter; 
-                    game->currentScene = game->currentChapter->firstScene;
-                } else {
-                    game->currentScene = NULL; // menandai akhir game
-                }
+    selectScene(game);
+}
 
-            } else {
-                displayScene(game);
-            }
+void selectScene(Game* game) {
+    if (game->currentStory == NULL) {
+        printf("Tidak ada cerita yang dipilih.\n");
+        return;
+    }
+
+    if (game->currentChapter == NULL) {
+        game->currentChapter = game->currentStory->chapters.head;
+        if (game->currentChapter == NULL) {
+            printf("Tidak ada chapter dalam cerita ini.\n");
             return;
         }
     }
-    printf("Pilihan tidak valid!\n");
+
+    if (game->currentScene == NULL) {
+        game->currentScene = game->currentChapter->firstScene;
+        if (game->currentScene == NULL) {
+            printf("Tidak ada scene dalam chapter ini.\n");
+            return;
+        }
+        push(&game->sceneStack, game->currentScene);
+    }
+
+    displayScene(game);
 }
 
 void displayScene(Game* game) {
-    if (game == NULL || game->currentScene == NULL) {
-        printf("Scene tidak tersedia!\n");
+    if (game->currentScene == NULL) {
+        printf("Tidak ada scene untuk ditampilkan.\n");
         return;
     }
 
     printf("\n=== SCENE: %s ===\n", game->currentScene->title);
     printf("%s\n", game->currentScene->description);
 
+    int choiceCount = 0;
     for (int i = 0; i < MAX_CHOICES; i++) {
-        if (game->currentScene->choices[i].title[0] != '\0') {
-            printf("Pilihan [%d]: %s\n", game->currentScene->choices[i].id, game->currentScene->choices[i].title);
+        if (game->currentScene->choices[i].id != -1 && game->currentScene->choices[i].title[0] != '\0') {
+            printf("%d. %s\n", i + 1, game->currentScene->choices[i].title);
+            choiceCount++;
         }
     }
 
-    printf("Masukkan 0 untuk undo, 99 untuk lihat riwayat\n");
+    if (choiceCount == 0) {
+        printf("Tidak ada pilihan. Cerita selesai.\n");
+        endGame(game);
+        return;
+    }
 
-    int choice;
-    do {
-        printf("Pilihan: ");
-        scanf("%d", &choice);
-        getchar();
-        if (!validatePlayerInput(game->currentScene, choice)) {
-            printf("Pilihan tidak valid. Coba lagi.\n");
-        }
-    } while (!validatePlayerInput(game->currentScene, choice));
-
-    if (choice == 0) {
-        undoScene(game);
-    } else if (choice == 99) {
-        tampilkanRiwayat(game);
-        displayScene(game); // kembali ke scene
+    int input = validatePlayerInput(playerMode(game), choiceCount);
+    if (input != -1) {
+        addRiwayat(&game->pilihanRiwayat, input, game->currentScene->choices[input - 1].title);
+        game->currentScene = game->currentScene->choices[input - 1].nextScene;
+        push(&game->sceneStack, game->currentScene);
+        displayScene(game);
     } else {
-        selectScene(game, choice);
+        undoScene(game);
     }
 }
 
 void undoScene(Game* game) {
-    if (game == NULL || game->sceneStack == NULL) {
-        printf("Tidak ada scene untuk dikembalikan!\n");
+    if (isEmptyStack(&game->sceneStack)) {
+        printf("Tidak ada scene sebelumnya untuk diundo.\n");
         return;
     }
 
-    addressScene scene = pop(game->sceneStack);
-    if (scene != NULL) {
-        game->currentScene = scene;
-        displayScene(game);
-    }
+    pop(&game->sceneStack);
+    game->currentScene = game->sceneStack.top != NULL ? game->sceneStack.top->scene : NULL;
+    displayScene(game);
 }
 
 void tampilkanRiwayat(Game* game) {
-    if (game == NULL) return;
     printRiwayat(&game->pilihanRiwayat);
 }
 
 void endGame(Game* game) {
-    if (game == NULL) {
-        return;
-    }
-
-    if (game->fm != NULL) {
-        free(game->fm);
-        game->fm = NULL;
-    }
-    if (game->sceneStack != NULL) {
-        freeStack(game->sceneStack);
-        game->sceneStack = NULL;
-    }
-
-    clearRiwayat(&game->pilihanRiwayat);
-
-    game->currentStory = NULL;
-    game->currentChapter = NULL;
-    game->currentScene = NULL;
-
-    free(game);
     printf("Terima kasih telah bermain!\n");
+    freeStack(&game->sceneStack);
+    clearRiwayat(&game->pilihanRiwayat);
+    free(game);
 }
 
-void saveGameState(Game* game, char* filename) {
-    if (game == NULL || filename == NULL) {
-        printf("Gagal menyimpan: Game atau filename tidak valid!\n");
+void saveGameState(Game* game) {
+    if (game->currentStory == NULL) {
+        printf("Tidak ada cerita untuk disimpan.\n");
         return;
     }
 
-    char savePath[MAX_NAME];
-    snprintf(savePath, MAX_NAME, "data/%s_save_%d.txt", filename, game->storyIndex);
+    char filename[50];
+    printf("Masukkan nama file untuk menyimpan (tanpa ekstensi): ");
+    fgets(filename, 50, stdin);
+    filename[strcspn(filename, "\n")] = '\0';
 
-    FILE* file = fopen(savePath, "w");
+    char filepath[100];
+    snprintf(filepath, 100, "saves/%s.txt", filename);
+
+    FILE* file = fopen(filepath, "w");
     if (file == NULL) {
-        printf("Gagal membuat file save!\n");
+        printf("Gagal membuka file untuk menyimpan.\n");
         return;
     }
 
-    fprintf(file, "StoryIndex: %d\n", game->storyIndex);
-    fprintf(file, "ChapterTitle: %s\n", (game->currentChapter != NULL) ? game->currentChapter->title : "None");
-    fprintf(file, "SceneTitle: %s\n", (game->currentScene != NULL) ? game->currentScene->title : "None");
+    fprintf(file, "Story: %s\n", game->currentStory->title);
+    fprintf(file, "Chapter: %s\n", game->currentChapter->title);
+    fprintf(file, "Scene: %s\n", game->currentScene->title);
     fclose(file);
 
-    printf("Status game disimpan ke: %s\n", savePath);
+    printf("Game state disimpan ke %s.\n", filepath);
 }
 
-void loadGameState(Game* game, char* filename) {
-    if (game == NULL || filename == NULL) {
-        printf("Gagal memuat: Game atau filename tidak valid!\n");
-        return;
-    }
+void loadGameState(Game* game) {
+    char filename[50];
+    printf("Masukkan nama file untuk memuat (tanpa ekstensi): ");
+    fgets(filename, 50, stdin);
+    filename[strcspn(filename, "\n")] = '\0';
 
-    char savePath[MAX_NAME];
-    snprintf(savePath, MAX_NAME, "data/%s_save_%d.txt", filename, game->storyIndex);
+    char filepath[100];
+    snprintf(filepath, 100, "saves/%s.txt", filename);
 
-    FILE* file = fopen(savePath, "r");
+    FILE* file = fopen(filepath, "r");
     if (file == NULL) {
-        printf("File save tidak ditemukan!\n");
+        printf("File tidak ditemukan.\n");
         return;
     }
 
-    char line[100];
+    char line[256];
     int storyIndex = -1;
-    char chapterTitle[MAX_TITLE] = "";
-    char sceneTitle[MAX_TITLE] = "";
-
-    while (fgets(line, 100, file)) {
-        trim(line);
-        if (strncmp(line, "StoryIndex: ", 12) == 0) {
-            sscanf(line + 12, "%d", &storyIndex);
-        } else if (strncmp(line, "ChapterTitle: ", 14) == 0) {
-            strncpy(chapterTitle, line + 14, MAX_TITLE - 1);
-        } else if (strncmp(line, "SceneTitle: ", 12) == 0) {
-            strncpy(sceneTitle, line + 12, MAX_TITLE - 1);
+    while (fgets(line, 256, file)) {
+        line[strcspn(line, "\n")] = '\0';
+        if (strncmp(line, "Story: ", 7) == 0) {
+            char storyTitle[100];
+            strncpy(storyTitle, line + 7, 100);
+            int count;
+            StoryEntry* stories = listStories(&count);
+            for (int i = 0; i < count; i++) {
+                if (strcmp(stories[i].title, storyTitle) == 0) {
+                    storyIndex = i;
+                    break;
+                }
+            }
+            free(stories);
+            if (storyIndex != -1) {
+                game->currentStory = fm_load_story(stories[storyIndex].filename);
+            }
+        } else if (strncmp(line, "Chapter: ", 9) == 0) {
+            char chapterTitle[100];
+            strncpy(chapterTitle, line + 9, 100);
+            addressChapter curr = game->currentStory->chapters.head;
+            int index = 1;
+            while (curr != NULL) {
+                if (strcmp(curr->title, chapterTitle) == 0) {
+                    game->currentChapter = curr;
+                    break;
+                }
+                curr = curr->nextChapter;
+                index++;
+            }
+        } else if (strncmp(line, "Scene: ", 7) == 0) {
+            char sceneTitle[100];
+            strncpy(sceneTitle, line + 7, 100);
+            addressScene curr = game->currentChapter->firstScene;
+            while (curr != NULL) {
+                if (strcmp(curr->title, sceneTitle) == 0) {
+                    game->currentScene = curr;
+                    break;
+                }
+                curr = curr->nextScene;
+            }
         }
     }
     fclose(file);
 
-    if (storyIndex != -1) {
-        int count = 0;
-        StoryEntry* stories = listStories(&count);
-        if (storyIndex >= 0 && storyIndex < count) {
-            game->currentStory = loadStory(stories[storyIndex].filename);
-            game->storyIndex = storyIndex;
-            game->currentChapter = game->currentStory->chapters.head;
-            while (game->currentChapter != NULL && strcmp(game->currentChapter->title, chapterTitle) != 0) {
-                game->currentChapter = game->currentChapter->nextChapter;
-            }
-            game->currentScene = (game->currentChapter != NULL) ? game->currentChapter->firstScene : NULL;
-            while (game->currentScene != NULL && strcmp(game->currentScene->title, sceneTitle) != 0) {
-                game->currentScene = game->currentScene->nextScene;
-            }
-        }
-        free(stories);
+    if (game->currentStory != NULL && game->currentChapter != NULL && game->currentScene != NULL) {
+        printf("Game state dimuat dari %s.\n", filepath);
+        push(&game->sceneStack, game->currentScene);
+    } else {
+        printf("Gagal memuat game state.\n");
     }
-
-    printf("Status game dimuat dari: %s\n", savePath);
 }
 
 void tampilkanMenuAwal(Game* game) {
     int pilihan;
     do {
-        printf("\n===== MENU AWAL GAME =====\n");
-        printf("1. Mulai Game Baru\n");
-        printf("2. Lanjutkan dari Save File\n");
-        printf("3. Keluar\n");
-        printf("Masukkan pilihan (1-3): ");
-        scanf("%d", &pilihan);
-        getchar(); // Bersihkan newline dari buffer
+        printf("\n=== MENU AWAL ===\n");
+        printf("1. Mulai Permainan Baru\n");
+        printf("2. Lanjutkan Permainan\n");
+        printf("3. Simpan Permainan\n");
+        printf("4. Muat Permainan\n");
+        printf("5. Lihat Riwayat Pilihan\n");
+        printf("6. Keluar\n");
+        printf("Pilihan: ");
+        scanf("%d", &pilihan); getchar();
 
-        if (pilihan == 1) {
-            startGame(game);
-            playerMode(game);
-        } else if (pilihan == 2) {
-            char filename[100];
-            printf("Masukkan nama file save (tanpa ekstensi): ");
-            scanf("%s", filename);
-            getchar();
-            loadGameState(game, filename);
-
-            if (game->currentScene != NULL) {
-                playerMode(game);
-            } else {
-                printf("Gagal melanjutkan game. Mungkin file tidak valid.\n");
-            }
-
-        } else if (pilihan == 3) {
-            printf("Terima kasih! Game ditutup.\n");
-        } else {
-            printf("Pilihan tidak valid. Silakan coba lagi.\n");
+        switch (pilihan) {
+            case 1:
+                selectStory(game);
+                break;
+            case 2:
+                if (game->currentStory != NULL) {
+                    selectScene(game);
+                } else {
+                    printf("Tidak ada permainan yang sedang berlangsung.\n");
+                }
+                break;
+            case 3:
+                saveGameState(game);
+                break;
+            case 4:
+                loadGameState(game);
+                break;
+            case 5:
+                tampilkanRiwayat(game);
+                break;
         }
-    } while (pilihan != 3);
+    } while (pilihan != 6);
 }
 
-void playerMode(Game* game) {
-    if (game == NULL || game->currentScene == NULL) {
-        printf("Game tidak dapat dimulai.\n");
-        return;
-    }
-
-    while (game->currentScene != NULL) {
-        displayScene(game); // akan terus nampilkan sampai selesai
-    }
-
-    printf("Permainan telah selesai!\n");
+int playerMode(Game* game) {
+    int input;
+    printf("Masukkan pilihan (1-%d) atau 0 untuk Undo: ", MAX_CHOICES);
+    scanf("%d", &input); getchar();
+    return input;
 }
 
-int validatePlayerInput(addressScene node, int choice) {
-    if (choice == 0 || choice == 99) return 1;
-
-    for (int i = 0; i < MAX_CHOICES; i++) {
-        if (node->choices[i].id == choice && node->choices[i].title[0] != '\0') {
-            return 1;
-        }
-    }
-    return 0;
+int validatePlayerInput(int input, int maxChoices) {
+    if (input == 0) return -1; // Untuk undo
+    if (input >= 1 && input <= maxChoices) return input;
+    return -1;
 }

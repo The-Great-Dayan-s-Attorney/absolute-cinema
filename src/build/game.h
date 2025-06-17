@@ -1,38 +1,38 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "filemanager.h"
+#include "convention.h"
 #include "story.h"
 #include "chapter.h"
 #include "scene.h"
 #include "queue.h"
 #include "stack.h"
 #include "riwayat.h"
+#include "linkedlist.h"
+#include "filemanager.h"
 
-#include "convention.h"
-
-typedef struct {
+typedef struct Game {
     FileManager* fm;
     addressStory currentStory;
     addressChapter currentChapter;
     addressScene currentScene;
-    Stack* sceneStack; // Untuk menyimpan riwayat scene (undo)
+    Stack sceneStack;
     int storyIndex;
     RiwayatList pilihanRiwayat;
 } Game;
 
 Game* createGame();
 void startGame(Game* game);
-void selectStory(Game* game, int index);
-void selectScene(Game* game, int choiceId);
+void selectStory(Game* game);
+void selectScene(Game* game);
 void displayScene(Game* game);
 void undoScene(Game* game);
-void endGame(Game* game);
-void saveGameState(Game* game, char* filename);
-void loadGameState(Game* game, char* filename);
 void tampilkanRiwayat(Game* game);
+void endGame(Game* game);
+void saveGameState(Game* game);
+void loadGameState(Game* game);
 void tampilkanMenuAwal(Game* game);
-void playerMode(Game* game);
-int validatePlayerInput(addressScene node, int choice);
+int playerMode(Game* game); // Diperbarui dari void menjadi int
+int validatePlayerInput(int input, int maxChoices);
 
 #endif

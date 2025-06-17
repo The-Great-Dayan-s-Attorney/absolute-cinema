@@ -8,6 +8,7 @@
 #include "queue.h"
 #include "scene.h"
 #include "choices.h"
+#include "filemanager.h"
 
 void menuStory(addressStory s);
 
@@ -15,7 +16,7 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex);
 
 void mainMenuBuild() {
     addressStory listStory = NULL;
-    loadAllStories(&listStory, "../../data");
+    fm_load_all_stories(&listStory, "../../data");
     int pilihan;
 
     do {
@@ -38,14 +39,13 @@ void mainMenuBuild() {
                 addressStory s = createStory(title, desc);
                 addStory(&listStory, s);
 
-                writeStoryToFolder(s);
+                fm_save_story(s);
                 break;
             }
             case 2: {
                 char* storyName = pilihStoryDariFolder("../../data");
 
                 if (storyName != NULL) {
-                    // Path yang benar ke file story.txt
                     char storyPath[200];
                     snprintf(storyPath, sizeof(storyPath), "../../data/%s/details_story.txt", storyName);
 
@@ -56,20 +56,17 @@ void mainMenuBuild() {
                         char line[256];
                         char title[100], desc[200];
 
-                        fgets(line, sizeof(line), f);  // Judul
+                        fgets(line, sizeof(line), f);
                         sscanf(line, "Judul: %[^\n]", title);
 
-                        fgets(line, sizeof(line), f);  // Deskripsi
+                        fgets(line, sizeof(line), f);
                         sscanf(line, "Deskripsi: %[^\n]", desc);
 
                         fclose(f);
 
-                        // Buat addressStory dari file
                         addressStory s = createStory(title, desc);
-                        // Kalau kamu mau, bisa tambahkan ke listStory juga
                         addStory(&listStory, s);
 
-                        // Masuk ke menu story
                         menuStory(s);
                     }
                 } else {
@@ -85,7 +82,8 @@ void mainMenuBuild() {
             case 4: {
                 addressStory curr = listStory;
                 while (curr) {
-                    writeStoryToFolder(curr);
+                    fm_save_story(curr);
+                    fm_resave_all_chapters(curr);
                     curr = curr->nextStory;
                 }
                 break;
@@ -106,7 +104,7 @@ void menuStory(addressStory s) {
     static int loaded = 0;
 
     if (!loaded) {
-        loadChaptersFromFolder(s);
+        fm_load_chapters_from_folder(s);
         loaded = 1;
     }
 
@@ -133,15 +131,8 @@ void menuStory(addressStory s) {
                 addressChapter ch = createChapter(title, desc);
                 enqueue(&s->chapters, ch);
 
-                // Simpan langsung
-                int index = 1;
-                addressChapter temp = s->chapters.head;
-                while (temp != ch) {
-                    index++;
-                    temp = temp->nextChapter;
-                }
-
-                saveChapterWithScenes(s, ch, index);
+                int index = getChapterCount(&s->chapters);
+                fm_save_chapter_with_scenes(s, ch, index);
                 break;
             }
 
@@ -178,32 +169,18 @@ void menuStory(addressStory s) {
                     break;
                 }
 
-                curr = s->chapters.head;
-                for (int i = 1; i < pilihChapter; i++) {
-                    curr = curr->nextChapter;
+                addressChapter ch = fm_load_chapter(s, pilihChapter);
+                if (ch != NULL) {
+                    menuChapter(s, ch, pilihChapter);
+                } else {
+                    printf("Gagal memuat chapter.\n");
                 }
-
-
-                // menuChapter(s, curr, pilihChapter);
-
-                addressChapter ch = loadChapter(s, pilihChapter);
-                    if (ch != NULL) {
-                        menuChapter(s, ch, pilihChapter);
-                    } else {
-                        printf("Gagal memuat chapter.\n");
-                    }
 
                 break;
             }
 
             case 4: {
-                addressChapter curr = s->chapters.head;
-                int i = 1;
-                while (curr != NULL) {
-                    saveChapterWithScenes(s, curr, i);
-                    curr = curr->nextChapter;
-                    i++;
-                }
+                fm_resave_all_chapters(s);
                 printf("Semua chapter berhasil disimpan ulang.\n");
                 break;
             }
@@ -241,14 +218,8 @@ void menuStory(addressStory s) {
                 if (strlen(newDesc) > 1)
                     strncpy(curr->description, newDesc, MAX_DESCRIPTION);
 
-                // Simpan ulang
-                int index = 1;
-                addressChapter tmp = s->chapters.head;
-                while (tmp != NULL && tmp != curr) {
-                    index++;
-                    tmp = tmp->nextChapter;
-                }
-                saveChapterWithScenes(s, curr, index);
+                int index = getChapterCount(&s->chapters);
+                fm_save_chapter_with_scenes(s, curr, index);
 
                 printf("Chapter berhasil diperbarui.\n");
                 break;
@@ -265,7 +236,6 @@ void menuStory(addressStory s) {
         }
     } while (pilihan != 7);
 }
-
 
 void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
     int pilihan;
@@ -302,7 +272,6 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
                             fgets(sc->choices[i].title, MAX_TITLE, stdin);
                             sc->choices[i].title[strcspn(sc->choices[i].title, "\n")] = '\0';
 
-                            // Buat scene tujuan langsung
                             char tujuanTitle[MAX_TITLE], tujuanDesc[MAX_DESCRIPTION];
                             printf("Scene Tujuan - Judul: ");
                             fgets(tujuanTitle, MAX_TITLE, stdin);
@@ -365,7 +334,7 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex) {
                 printAllScenes(ch);
             }
             case 4:
-                saveChapterWithScenes(s, ch, chapterIndex);  // format fancy di sini
+                fm_save_chapter_with_scenes(s, ch, chapterIndex);
                 break;
             case 5:
                 printSceneStructure(ch);

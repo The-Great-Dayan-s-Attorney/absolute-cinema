@@ -1,0 +1,26 @@
+[Judul]
+Salah Paham yang Manis
+
+[Deskripsi]
+Aang mendengar Ica mengobrol dengan teman tentang “seseorang spesial” dan mengira Ica punya pacar. Dia berusaha menarik perhatian Ica dengan cara-cara kocak, dari membuat latte art hingga menyanyikan lagu di kafe. Bisakah Aang mengatasi salah paham ini?
+
+[Scene]
+0|Latte Art Gagal|Aang mencoba membuat latte art berbentuk hati untuk Ica, tapi hasilnya mirip sepatu.
+1|Karaoke Dadakan|Aang nekat menyanyi di open mic kafe untuk impress Ica, tapi lupa lirik di tengah lagu.
+2|Kejutan Kue|Aang memberikan kue gratis untuk Ica, tapi ternyata Ica alergi kacang.
+3|Obrolan di Teras|Ica mengklarifikasi bahwa “seseorang spesial” adalah anjing peliharaannya, membuat Aang lega.
+4|Janji Kopi Besok|Ica mengajak Aang ngobrol lagi besok, meninggalkan Aang dengan senyum lebar.
+
+[Choices]
+0|Bercanda soal latte art|1
+0|Minta maaf|2
+0|Tawarkan latte baru|1
+1|Lanjut nyanyi meski lupa lirik|3
+1|Berhenti nyanyi|2
+1|Improv dengan rap|3
+2|Tawarkan kue lain|3
+2|Ganti topik|4
+2|Minta maaf soal alergi|3
+3|Tanyakan nama anjingnya|4
+3|Ceritakan soal hewan peliharaan Aang|4
+3|Bercanda soal anjing|4

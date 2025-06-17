@@ -1,0 +1,26 @@
+[Judul]
+Pengakuan di Bawah Bintang
+
+[Deskripsi]
+Malam acara kafe penuh lampu dan musik. Aang mengumpulkan keberanian untuk menyatakan perasaannya pada Ica, tapi momen canggung tak terhindarkan. Akankah cinta mereka bersemi?
+
+[Scene]
+0|Persiapan Malam|Aang gugup menyiapkan kafe untuk acara malam, Ica membantu dengan senyum.
+1|Tarian Dadakan|Ica mengajak Aang menari, tapi Aang menginjak kakinya.
+2|Obrolan di Balkon|Aang dan Ica ngobrol di balkon, suasana jadi romantis di bawah bintang.
+3|Gangguan Kocak|Dion muncul dan bercanda, hampir merusak momen Aang.
+4|Pengakuan Jadi|Aang akhirnya menyatakan cinta, dan Ica tersenyum, menerimanya.
+
+[Choices]
+0|Bercanda soal grogi|1
+0|Fokus dekorasi|2
+0|Tanyakan ide Ica|1
+1|Minta maaf soal tari|3
+1|Lanjut menari|2
+1|Bercanda soal langkah kaki|3
+2|Ceritakan perasaan|3
+2|Tunggu momen|4
+2|Bercanda soal bintang|3
+3|Abaikan Dion|4
+3|Bercanda dengan Dion|4
+3|Tarik Ica ke samping|4

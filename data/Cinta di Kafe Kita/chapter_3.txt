@@ -1,0 +1,26 @@
+[Judul]
+Kencan Dadakan
+
+[Deskripsi]
+Hujan deras mengunci Aang dan Ica di kafe setelah jam tutup. Situasi ini jadi “kencan” tak terduga, penuh momen manis dan canggung. Akankah malam ini membawa mereka lebih dekat?
+
+[Scene]
+0|Terkunci di Kafe|Aang dan Ica menyadari pintu kafe terkunci karena hujan deras di luar.
+1|Main Board Game|Mereka main Uno, tapi Aang terus kalah karena grogi tiap Ica tersenyum.
+2|Bikin Kopi Bareng|Ica mengajak Aang bereksperimen bikin kopi baru, hasilnya aneh tapi menyenangkan.
+3|Cerita Masa Kecil|Ica berbagi cerita lucu masa kecilnya, membuat Aang merasa nyaman.
+4|Hujan Reda|Hujan berhenti, tapi Ica bilang dia senang menghabiskan waktu dengan Aang.
+
+[Choices]
+0|Coba buka pintu lagi|1
+0|Cari selimut|2
+0|Bercanda soal hujan|1
+1|Curang di Uno|3
+1|Main jujur|2
+1|Sembunyikan kartu|3
+2|Tambah sirup karamel|3
+2|Coba rasa baru|4
+2|Bercanda soal rasa aneh|3
+3|Ceritakan cerita Aang|4
+3|Dengarkan lebih banyak|4
+3|Tanyakan hobi Ica|4

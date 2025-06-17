@@ -1,0 +1,26 @@
+[Judul]
+Pertemuan di Kafe Kita
+
+[Deskripsi]
+Aang, barista baru di Kafe Kita, berjuang menyesuaikan diri dengan pekerjaan dan pelanggan. Suatu hari, Ica, gadis cerdas dengan senyum menawan, menjadi pelanggan tetap yang membuat jantungan Aang. Bisakah Aang membuat kesan pertama yang baik?
+
+[Scene]
+0|Spill Kopi Pertama|Aang gugup saat Ica memesan latte, dan tanpa sengaja menumpahkan kopi di meja kasir.
+1|Obrolan Canggung|Aang mencoba mengobrol dengan Ica tentang buku yang dibacanya, tapi malah salah menyebut judulnya.
+2|Pesanan Salah|Aang salah membuat pesanan Ica, memberikan mocha alih-alih latte, dan panik saat Ica tersenyum.
+3|Bantuan di Tengah Kekacauan|Ica membantu Aang membersihkan tumpahan kopi saat kafe ramai, membuat Aang makin terpana.
+4|Senyum Penutup Shift|Aang berhasil membuat latte yang sempurna untuk Ica di akhir shift, dan Ica tersenyum lebar.
+
+[Choices]
+0|Bercanda soal tumpahan|1
+0|Minta maaf berulang|2
+0|Tawarkan tisu|2
+1|Bercanda tentang salah judul|3
+1|Tutup muka malu|2
+1|Ganti topik ke musik|3
+2|Coba buat mocha baru|3
+2|Bercanda soal mocha|4
+2|Tawarkan ganti latte|3
+3|Tawarkan minuman gratis|4
+3|Ucapkan terima kasih|4
+3|Bercanda soal kafe ramai|4

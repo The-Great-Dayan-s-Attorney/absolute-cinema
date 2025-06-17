@@ -1,0 +1,26 @@
+[Judul]
+Saingan Muncul
+
+[Deskripsi]
+Fathin, pelanggan baru yang tampan, sering ngobrol dengan Ica, membuat Aang cemburu. Aang berusaha menunjukkan dia lebih baik, tapi malah bikin kekacauan lucu. Bisakah Aang memenangkan hati Ica?
+
+[Scene]
+0|Cemburu di Kasir|Aang melihat Fathin dan Ica tertawa bersama, hatinya panas.
+1|Tantangan Latte|Aang menantang Fathin bikin latte lebih cepat, tapi mesin kopi mogok.
+2|Hadiah Kecil|Aang memberikan Ica kupon diskon kafe, tapi Fathin kasih bunga.
+3|Jujur pada Ica|Aang mengaku cemburu, dan Ica bilang Fathin cuma teman kuliah.
+4|Undangan Malam Kafe|Ica mengajak Aang ke acara malam kafe, membuatnya bersorak dalam hati.
+
+[Choices]
+0|Ikut ngobrol dengan Fathin|1
+0|Fokus kerja|2
+0|Bercanda soal pesanan|1
+1|Sabotase mesin (bercanda)|3
+1|Perbaiki mesin|2
+1|Tawarkan bantuan Fathin|3
+2|Tulis pesan di kupon|3
+2|Beri kupon biasa|4
+2|Bercanda soal bunga|3
+3|Tanyakan acara malam|4
+3|Ucapkan terima kasih|4
+3|Bercanda soal cemburu|4

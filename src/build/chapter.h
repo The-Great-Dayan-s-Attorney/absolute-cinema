@@ -32,4 +32,12 @@ void printAllChapter(const Queue *q);
 
 int getChapterCount(Queue *q);
 
+void chapterTambahSceneBaru(addressStory s, addressChapter ch, int* sceneCounter);
+
+void chapterTambahPilihanKeScene(addressChapter ch);
+
+void chapterEditScene(addressChapter ch);
+
+void chapterHapusScene(addressChapter ch);
+
 #endif

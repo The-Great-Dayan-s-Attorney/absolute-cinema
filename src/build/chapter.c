@@ -175,3 +175,123 @@ int getChapterCount(Queue *q) {
     }
     return count;
 }
+
+void chapterTambahSceneBaru(addressStory s, addressChapter ch, int* sceneCounter) {
+    char judul[MAX_TITLE], deskripsi[MAX_DESCRIPTION];
+    printf("Judul Scene: "); fgets(judul, MAX_TITLE, stdin);
+    printf("Deskripsi Scene: "); fgets(deskripsi, MAX_DESCRIPTION, stdin);
+
+    addressScene sc = createScene(judul, deskripsi, (*sceneCounter)++);
+    addSceneToChapter(ch, sc);
+    printf("Scene #%d ditambahkan.\n", sc->id);
+
+    char tambahChoice = 'y';
+    while (tambahChoice == 'y' || tambahChoice == 'Y') {
+        for (int i = 0; i < MAX_CHOICES; i++) {
+            if (sc->choices[i].id == -1) {
+                printf("\n-- Pilihan #%d --\n", i + 1);
+                printf("Judul Pilihan: ");
+                fgets(sc->choices[i].title, MAX_TITLE, stdin);
+                sc->choices[i].title[strcspn(sc->choices[i].title, "\n")] = '\0';
+
+                char tujuanTitle[MAX_TITLE], tujuanDesc[MAX_DESCRIPTION];
+                printf("Scene Tujuan - Judul: ");
+                fgets(tujuanTitle, MAX_TITLE, stdin);
+                printf("Scene Tujuan - Deskripsi: ");
+                fgets(tujuanDesc, MAX_DESCRIPTION, stdin);
+
+                addressScene tujuanScene = createScene(tujuanTitle, tujuanDesc, (*sceneCounter)++);
+                addSceneToChapter(ch, tujuanScene);
+
+                sc->choices[i].id = tujuanScene->id;
+                sc->choices[i].nextScene = tujuanScene;
+
+                printf("Scene Tujuan #%d ditambahkan & terhubung.\n", tujuanScene->id);
+
+                printf("Tambah pilihan lagi? (y/n): ");
+                scanf(" %c", &tambahChoice); getchar();
+                break;
+            }
+        }
+    }
+}
+
+void chapterTambahPilihanKeScene(addressChapter ch) {
+    printSceneStructure(ch);
+    int fromID, toID;
+    printf("ID Scene asal: ");
+    scanf("%d", &fromID); getchar();
+    addressScene fromScene = findSceneByID(ch, fromID);
+    if (!fromScene) {
+        printf("Scene asal tidak ditemukan.\n");
+        return;
+    }
+
+    for (int i = 0; i < MAX_CHOICES; i++) {
+        if (fromScene->choices[i].id == -1) {
+            printf("Judul Pilihan: ");
+            fgets(fromScene->choices[i].title, MAX_TITLE, stdin);
+            fromScene->choices[i].title[strcspn(fromScene->choices[i].title, "\n")] = '\0';
+
+            printf("ID Scene tujuan (yang sudah ada): ");
+            scanf("%d", &toID); getchar();
+
+            addressScene toScene = findSceneByID(ch, toID);
+            if (!toScene) {
+                printf("Scene tujuan tidak ditemukan.\n");
+                return;
+            }
+
+            fromScene->choices[i].id = toID;
+            fromScene->choices[i].nextScene = toScene;
+            printf("Pilihan berhasil ditambahkan ke Scene %d.\n", fromID);
+            return;
+        }
+    }
+}
+
+void chapterEditScene(addressChapter ch) {
+    printAllScenes(ch);
+    int sceneID;
+    printf("Masukkan ID Scene yang ingin diedit: ");
+    scanf("%d", &sceneID); getchar();
+
+    addressScene scene = findSceneByID(ch, sceneID);
+    if (scene == NULL) {
+        printf("Scene tidak ditemukan.\n");
+        return;
+    }
+
+    printf("Judul lama: %s", scene->title);
+    printf("Deskripsi lama: %s", scene->description);
+
+    printf("Masukkan judul baru (atau tekan ENTER untuk tidak mengubah): ");
+    char newTitle[MAX_TITLE];
+    fgets(newTitle, MAX_TITLE, stdin);
+    if (newTitle[0] != '\n') {
+        strncpy(scene->title, newTitle, MAX_TITLE);
+    }
+
+    printf("Masukkan deskripsi baru (atau tekan ENTER untuk tidak mengubah): ");
+    char newDesc[MAX_DESCRIPTION];
+    fgets(newDesc, MAX_DESCRIPTION, stdin);
+    if (newDesc[0] != '\n') {
+        strncpy(scene->description, newDesc, MAX_DESCRIPTION);
+    }
+
+    printf("Scene berhasil diperbarui.\n");
+}
+
+void chapterHapusScene(addressChapter ch) {
+    printAllScenes(ch);
+    int sceneID;
+    printf("Masukkan ID Scene yang ingin dihapus: ");
+    scanf("%d", &sceneID); getchar();
+
+    bool success = hapusSceneDariChapter(ch, sceneID);
+    if (success) {
+        printf("Scene dengan ID %d berhasil dihapus.\n", sceneID);
+    } else {
+        printf("Scene tidak ditemukan atau gagal dihapus.\n");
+    }
+}

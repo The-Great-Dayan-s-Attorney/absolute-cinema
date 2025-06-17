@@ -35,4 +35,11 @@ void editStory(addressStory listStory);
 
 void hapusFolder(const char* path);
 
+void pilihDanBukaStory(addressStory *listStory);
+
+void tambahChapter(addressStory s);
+
+void pilihChapterDariStory(addressStory s);
+
+void editChapterDariStory(addressStory s);
 #endif

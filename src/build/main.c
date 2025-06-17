@@ -69,6 +69,6 @@ int main() {
             default:
                 printf("Pilihan tidak valid! Silakan coba lagi.\n");
         }
-    } while (pilihan != 3);
+    } while (pilihan != 4);
     return 0;
 }

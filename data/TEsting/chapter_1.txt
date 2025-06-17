@@ -1,0 +1,10 @@
+[Judul]
+Oke
+
+[Deskripsi]
+iya
+
+[Scene]
+2|oaeifh|oeiafj
+
+[Choices]

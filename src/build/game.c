@@ -106,25 +106,39 @@ void displayScene(Game* game) {
         return;
     }
 
-    int input = validatePlayerInput(playerMode(game), choiceCount);
-    if (input != -1) {
+    int input;
+    do {
+        input = validatePlayerInput(playerMode(game), choiceCount);
+        if (input == 0) {
+            printf("Input tidak valid. Silakan pilih angka dari 1 sampai %d, atau 0 untuk undo, -1 untuk menu.\n", choiceCount);
+        }
+    } while (input == 0);
+
+    if (input == -1) { // Input 0 untuk undo
+        undoScene(game);
+    } else if (input == -2) { // Input -1 untuk kembali ke menu awal
+        tampilkanMenuAwal(game);
+    } else if (input >= 1 && input <= choiceCount) {
         addRiwayat(&game->pilihanRiwayat, input, game->currentScene->choices[input - 1].title);
         game->currentScene = game->currentScene->choices[input - 1].nextScene;
         push(&game->sceneStack, game->currentScene);
         displayScene(game);
-    } else {
-        undoScene(game);
     }
 }
 
 void undoScene(Game* game) {
-    if (isEmptyStack(&game->sceneStack)) {
+    if (isEmptyStack(&game->sceneStack) || game->sceneStack.top == NULL || game->sceneStack.top->next == NULL) {
         printf("Tidak ada scene sebelumnya untuk diundo.\n");
+        displayScene(game); // Tetap tampilkan scene saat ini
         return;
     }
 
-    pop(&game->sceneStack);
-    game->currentScene = game->sceneStack.top != NULL ? game->sceneStack.top->scene : NULL;
+    pop(&game->sceneStack); // Hapus scene saat ini
+    if (game->sceneStack.top != NULL) {
+        game->currentScene = game->sceneStack.top->scene;
+    } else {
+        game->currentScene = NULL;
+    }
     displayScene(game);
 }
 
@@ -137,11 +151,13 @@ void endGame(Game* game) {
     freeStack(&game->sceneStack);
     clearRiwayat(&game->pilihanRiwayat);
     free(game);
+    game = createGame(); // Buat ulang game untuk reset state
+    tampilkanMenuAwal(game); // Kembali ke menu awal
 }
 
 void saveGameState(Game* game) {
-    if (game->currentStory == NULL) {
-        printf("Tidak ada cerita untuk disimpan.\n");
+    if (game->currentStory == NULL || game->currentChapter == NULL || game->currentScene == NULL) {
+        printf("Tidak ada cerita aktif untuk disimpan.\n");
         return;
     }
 
@@ -182,6 +198,12 @@ void loadGameState(Game* game) {
         return;
     }
 
+    freeStack(&game->sceneStack);
+    clearRiwayat(&game->pilihanRiwayat);
+    game->currentStory = NULL;
+    game->currentChapter = NULL;
+    game->currentScene = NULL;
+
     char line[256];
     int storyIndex = -1;
     while (fgets(line, 256, file)) {
@@ -205,14 +227,12 @@ void loadGameState(Game* game) {
             char chapterTitle[100];
             strncpy(chapterTitle, line + 9, 100);
             addressChapter curr = game->currentStory->chapters.head;
-            int index = 1;
             while (curr != NULL) {
                 if (strcmp(curr->title, chapterTitle) == 0) {
                     game->currentChapter = curr;
                     break;
                 }
                 curr = curr->nextChapter;
-                index++;
             }
         } else if (strncmp(line, "Scene: ", 7) == 0) {
             char sceneTitle[100];
@@ -232,6 +252,7 @@ void loadGameState(Game* game) {
     if (game->currentStory != NULL && game->currentChapter != NULL && game->currentScene != NULL) {
         printf("Game state dimuat dari %s.\n", filepath);
         push(&game->sceneStack, game->currentScene);
+        selectScene(game);
     } else {
         printf("Gagal memuat game state.\n");
     }
@@ -255,7 +276,7 @@ void tampilkanMenuAwal(Game* game) {
                 selectStory(game);
                 break;
             case 2:
-                if (game->currentStory != NULL) {
+                if (game->currentStory != NULL && game->currentChapter != NULL && game->currentScene != NULL) {
                     selectScene(game);
                 } else {
                     printf("Tidak ada permainan yang sedang berlangsung.\n");
@@ -270,19 +291,28 @@ void tampilkanMenuAwal(Game* game) {
             case 5:
                 tampilkanRiwayat(game);
                 break;
+            case 6:
+                printf("Keluar dari permainan.\n");
+                freeStack(&game->sceneStack);
+                clearRiwayat(&game->pilihanRiwayat);
+                free(game);
+                break;
+            default:
+                printf("Pilihan tidak valid. Silakan coba lagi.\n");
         }
     } while (pilihan != 6);
 }
 
-int playerMode() {
+int playerMode(Game* game) {
     int input;
-    printf("Masukkan pilihan (1-%d) atau 0 untuk Undo: ", MAX_CHOICES);
+    printf("Masukkan pilihan (1-%d), 0 untuk Undo, atau -1 untuk kembali ke Menu Awal: ", MAX_CHOICES);
     scanf("%d", &input); getchar();
     return input;
 }
 
 int validatePlayerInput(int input, int maxChoices) {
     if (input == 0) return -1; // Untuk undo
+    if (input == -1) return -2; // Untuk kembali ke menu awal
     if (input >= 1 && input <= maxChoices) return input;
-    return -1;
+    return 0; // Input tidak valid, ulangi
 }

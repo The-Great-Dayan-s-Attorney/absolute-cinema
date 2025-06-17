@@ -24,9 +24,9 @@
 #include "stack.c"
 #include "riwayat.c"
 
-
 int main() {
     int pilihan;
+    Game* game = NULL;
 
     do {
         printf("\n=== MENU UTAMA VISUAL NOVEL ===\n");
@@ -35,7 +35,7 @@ int main() {
         printf("3. Keluar\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan);
-        getchar(); // Bersihkan newline dari buffer
+        getchar();
 
         switch (pilihan) {
             case 1: {
@@ -45,19 +45,23 @@ int main() {
             }
             case 2: {
                 // Mode Play
-                Game* game = createGame();
-                if (game == NULL) {
-                    printf("Gagal memulai game! Memori tidak cukup.\n");
-                    return 1;
+                if (game == NULL) { 
+                    game = createGame();
+                    if (game == NULL) {
+                        printf("Gagal memulai game! Memori tidak cukup.\n");
+                        return 1;
+                    }
                 }
-
                 startGame(game);
-                playerMode(game); // Loop interaksi hingga game selesai dan memproses pilihan (undo & riwayat)
-                endGame(game); // Akhiri game setelah selesai
                 break;
             }
             case 3:
                 printf("Terima kasih telah menggunakan program!\n");
+                if (game != NULL) { 
+                    freeStack(&game->sceneStack);
+                    clearRiwayat(&game->pilihanRiwayat);
+                    free(game);
+                }
                 break;
             default:
                 printf("Pilihan tidak valid! Silakan coba lagi.\n");

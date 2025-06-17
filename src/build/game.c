@@ -420,3 +420,4 @@ int validatePlayerInput(int input, int maxChoices) {
     if (input >= 1 && input <= maxChoices) return input;
     return 0;
 }
+

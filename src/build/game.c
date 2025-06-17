@@ -330,9 +330,9 @@ void loadGameState(Game* game) {
         selectScene(game);
     } else {
         printf("Gagal memuat game state: data tidak lengkap.\n");
-        if (game->currentStory == NULL)
-        if (game->currentChapter == NULL)
-        if (game->currentScene == NULL)
+        if (game->currentStory == NULL) printf("Debug: Cerita tidak dimuat.\n");
+        if (game->currentChapter == NULL) printf("Debug: Chapter tidak dimuat.\n");
+        if (game->currentScene == NULL) printf("Debug: Scene tidak dimuat.\n");
     }
 }
 

@@ -34,5 +34,6 @@ void loadGameState(Game* game);
 int tampilkanMenuAwal(Game* game);
 int playerMode(); // Diperbarui dari void menjadi int
 int validatePlayerInput(int input, int maxChoices);
-
+void showHowToPlay();
+void tampilkanHeaderVisualNovel();
 #endif

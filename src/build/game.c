@@ -435,3 +435,38 @@ int validatePlayerInput(int input, int maxChoices) {
     if (input >= 1 && input <= maxChoices) return input;
     return 0;
 }
+
+void showHowToPlay() {
+    printf("\n=== CARA BERMAIN ===\n");
+    printf("Game ini adalah visual novel interaktif.\n\n");
+
+    printf("MODE BUILD (Buat Cerita):\n");
+    printf(" - Tambah story dan chapter.\n");
+    printf(" - Tiap chapter berisi scene (adegan) dan pilihan.\n");
+    printf(" - Scene dapat bercabang ke scene lain berdasarkan pilihan.\n\n");
+
+    printf("MODE PLAY (Mainkan Cerita):\n");
+    printf(" - Pilih cerita dan mainkan dari awal.\n");
+    printf(" - Buat pilihan yang akan membawa ke jalur cerita berbeda.\n");
+    printf(" - Bisa simpan dan lanjutkan permainan.\n\n");
+
+    printf("Tips:\n");
+    printf(" - Gunakan deskripsi dan judul yang menarik.\n");
+    printf(" - Rancang alur cerita dengan logis dan variatif.\n");
+    printf(" - Simpan perubahan secara berkala agar tidak hilang.\n");
+
+    printf("\nTekan ENTER untuk kembali...\n");
+    getchar();
+}
+
+void tampilkanHeaderVisualNovel() {
+    printf("\n");
+
+    printf("+====================================+\n");
+    printf("|       VISUAL NOVEL CLI EDITION     |\n");
+    printf("|------------------------------------|\n");
+    printf("|  \"In the shadows of choices, lies  |\n");
+    printf("|     a truth yet untold...\"         |\n");
+    printf("+====================================+\n");
+    printf("\n");
+}

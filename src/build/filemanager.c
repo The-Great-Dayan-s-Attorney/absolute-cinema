@@ -9,7 +9,7 @@
 
 // Helper untuk menghapus newline
 static void trim(char* str) {
-    int len = strlen(str);
+    size_t len = strlen(str);
     if (len > 0 && str[len - 1] == '\n') str[len - 1] = '\0';
 }
 
@@ -155,12 +155,106 @@ addressStory loadStory(char* filename) {
     return story;
 }
 
+// StoryEntry* listStories(int* count) {
+//     *count = 0;
+//     StoryEntry* stories = malloc(MAX_STORY * sizeof(StoryEntry));
+//     if (stories == NULL) {
+//         return NULL;
+//     }
+//     DIR* dir = opendir("data");
+//     if (dir == NULL) {
+//         free(stories);
+//         return NULL;
+//     }
+
+//     struct dirent* entry;
+//     while ((entry = readdir(dir)) != NULL) {
+//         if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+//             char folderPath[MAX_NAME];
+//             snprintf(folderPath, MAX_NAME, "data/%s", entry->d_name);
+//             char detailsPath[MAX_NAME];
+//             snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
+//             FILE* file = fopen(detailsPath, "r");
+//             if (file != NULL) {
+//                 char line[1000];
+//                 while (fgets(line, 1000, file)) {
+//                     trim(line);
+//                     if (strncmp(line, "Judul: ", 7) == 0) {
+//                         strncpy(stories[*count].filename, entry->d_name, MAX_NAME - 1);
+//                         strncpy(stories[*count].title, line + 7, MAX_TITLE - 1);
+//                         (*count)++;
+//                         break;
+//                     }
+//                 }
+//                 fclose(file);
+//             }
+//         }
+//     }
+//     closedir(dir);
+//     return stories;
+// }
+
+//StoryEntry* listStories(int* count) {
+//    *count = 0;
+//    StoryEntry* stories = malloc(MAX_STORY * sizeof(StoryEntry));
+//    if (stories == NULL) {
+//        return NULL;
+//    }
+//
+//    DIR* dir = opendir("data");
+//    if (dir == NULL) {
+//        free(stories);
+//        return NULL;
+//    }
+//
+//    struct dirent* entry;
+//    while ((entry = readdir(dir)) != NULL) {
+//        // Skip . and ..
+//        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+//            continue;
+//
+//        // Buat path lengkap
+//        char folderPath[MAX_NAME];
+//        snprintf(folderPath, MAX_NAME, "data/%s", entry->d_name);
+//
+//        // Cek apakah itu direktori
+//        struct stat st;
+//        if (stat(folderPath, &st) == 0 && S_ISDIR(st.st_mode)) {
+//            // Buka file details_story.txt
+//            char detailsPath[MAX_NAME];
+//            snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
+//            FILE* file = fopen(detailsPath, "r");
+//            if (file != NULL) {
+//                char line[1000];
+//                while (fgets(line, 1000, file)) {
+//                    trim(line);
+//                    if (strncmp(line, "Judul: ", 7) == 0) {
+//                        strncpy(stories[*count].filename, entry->d_name, MAX_NAME - 1);
+//                        stories[*count].filename[MAX_NAME - 1] = '\0'; // null terminate
+//
+//                        strncpy(stories[*count].title, line + 7, MAX_TITLE - 1);
+//                        stories[*count].title[MAX_TITLE - 1] = '\0'; // null terminate
+//
+//                        (*count)++;
+//                        break;
+//                    }
+//                }
+//                fclose(file);
+//            }
+//        }
+//    }
+//
+//    closedir(dir);
+//    return stories;
+//}
+
 StoryEntry* listStories(int* count) {
     *count = 0;
     StoryEntry* stories = malloc(MAX_STORY * sizeof(StoryEntry));
     if (stories == NULL) {
         return NULL;
     }
+
     DIR* dir = opendir("data");
     if (dir == NULL) {
         free(stories);
@@ -169,9 +263,18 @@ StoryEntry* listStories(int* count) {
 
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-            char folderPath[MAX_NAME];
-            snprintf(folderPath, MAX_NAME, "data/%s", entry->d_name);
+        // Skip . and ..
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+
+        // Buat path lengkap
+        char folderPath[MAX_NAME];
+        snprintf(folderPath, MAX_NAME, "data/%s", entry->d_name);
+
+        // Cek apakah itu direktori
+        struct stat st;
+        if (stat(folderPath, &st) == 0 && S_ISDIR(st.st_mode)) {
+            // Buka file details_story.txt
             char detailsPath[MAX_NAME];
             snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
             FILE* file = fopen(detailsPath, "r");
@@ -181,7 +284,11 @@ StoryEntry* listStories(int* count) {
                     trim(line);
                     if (strncmp(line, "Judul: ", 7) == 0) {
                         strncpy(stories[*count].filename, entry->d_name, MAX_NAME - 1);
+                        stories[*count].filename[MAX_NAME - 1] = '\0'; // null terminate
+
                         strncpy(stories[*count].title, line + 7, MAX_TITLE - 1);
+                        stories[*count].title[MAX_TITLE - 1] = '\0'; // null terminate
+
                         (*count)++;
                         break;
                     }
@@ -190,6 +297,7 @@ StoryEntry* listStories(int* count) {
             }
         }
     }
+
     closedir(dir);
     return stories;
 }

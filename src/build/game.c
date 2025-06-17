@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 #include "game.h"
 #include "filemanager.h"
 
@@ -9,25 +14,34 @@ Game* createGame() {
     if (game == NULL) return NULL;
 
     game->fm = createFileManager();
+    Stack* stack = createStack();
+    if (game->fm == NULL || stack == NULL) {
+        free(game->fm);
+        free(stack);
+        free(game);
+        return NULL;
+    }
+    game->sceneStack = *stack;
+    free(stack);
     game->currentStory = NULL;
     game->currentChapter = NULL;
     game->currentScene = NULL;
-    createStack(&game->sceneStack);
     game->storyIndex = -1;
     initRiwayat(&game->pilihanRiwayat);
 
     return game;
 }
 
-void startGame(Game* game) {
-    tampilkanMenuAwal(game);
+int startGame(Game* game) {
+    return tampilkanMenuAwal(game);
 }
 
 void selectStory(Game* game) {
     int count;
     StoryEntry* stories = listStories(&count);
-    if (count == 0) {
+    if (count == 0 || stories == NULL) {
         printf("Tidak ada cerita yang tersedia.\n");
+        free(stories);
         return;
     }
 
@@ -58,7 +72,7 @@ void selectStory(Game* game) {
 }
 
 void selectScene(Game* game) {
-    if (game->currentStory == NULL) {
+    if (game == NULL || game->currentStory == NULL) {
         printf("Tidak ada cerita yang dipilih.\n");
         return;
     }
@@ -84,7 +98,7 @@ void selectScene(Game* game) {
 }
 
 void displayScene(Game* game) {
-    if (game->currentScene == NULL) {
+    if (game == NULL || game->currentScene == NULL) {
         printf("Tidak ada scene untuk ditampilkan.\n");
         return;
     }
@@ -114,9 +128,9 @@ void displayScene(Game* game) {
         }
     } while (input == 0);
 
-    if (input == -1) { // Input 0 untuk undo
+    if (input == -1) {
         undoScene(game);
-    } else if (input == -2) { // Input -1 untuk kembali ke menu awal
+    } else if (input == -2) {
         tampilkanMenuAwal(game);
     } else if (input >= 1 && input <= choiceCount) {
         addRiwayat(&game->pilihanRiwayat, input, game->currentScene->choices[input - 1].title);
@@ -127,19 +141,29 @@ void displayScene(Game* game) {
 }
 
 void undoScene(Game* game) {
+    if (game == NULL) {
+        printf("Game tidak diinisialisasi.\n");
+        return;
+    }
     if (isEmptyStack(&game->sceneStack) || game->sceneStack.top == NULL || game->sceneStack.top->next == NULL) {
         printf("Tidak ada scene sebelumnya untuk diundo.\n");
-        displayScene(game); // Tetap tampilkan scene saat ini
+        if (game->currentScene != NULL) {
+            displayScene(game);
+        } else {
+            printf("Scene saat ini tidak valid.\n");
+        }
         return;
     }
 
-    pop(&game->sceneStack); // Hapus scene saat ini
-    if (game->sceneStack.top != NULL) {
-        game->currentScene = game->sceneStack.top->scene;
+    printf("Debug: Performing undo, stack top not NULL and has next.\n");
+    pop(&game->sceneStack);
+    game->currentScene = game->sceneStack.top != NULL ? game->sceneStack.top->scene : NULL;
+    if (game->currentScene != NULL) {
+        printf("Debug: Scene after undo: %s\n", game->currentScene->title);
+        displayScene(game);
     } else {
-        game->currentScene = NULL;
+        printf("Tidak ada scene untuk ditampilkan setelah undo.\n");
     }
-    displayScene(game);
 }
 
 void tampilkanRiwayat(Game* game) {
@@ -147,27 +171,42 @@ void tampilkanRiwayat(Game* game) {
 }
 
 void endGame(Game* game) {
+    if (game == NULL) return;
+
     printf("Terima kasih telah bermain!\n");
     freeStack(&game->sceneStack);
     clearRiwayat(&game->pilihanRiwayat);
-    free(game);
-    game = createGame(); // Buat ulang game untuk reset state
-    tampilkanMenuAwal(game); // Kembali ke menu awal
+    game->currentStory = NULL;
+    game->currentChapter = NULL;
+    game->currentScene = NULL;
+    game->storyIndex = -1;
+    Stack* stack = createStack();
+    if (stack != NULL) {
+        game->sceneStack = *stack;
+        free(stack);
+    }
+    initRiwayat(&game->pilihanRiwayat);
 }
 
 void saveGameState(Game* game) {
-    if (game->currentStory == NULL || game->currentChapter == NULL || game->currentScene == NULL) {
+    if (game == NULL || game->currentStory == NULL || game->currentChapter == NULL || game->currentScene == NULL) {
         printf("Tidak ada cerita aktif untuk disimpan.\n");
         return;
     }
 
+#ifdef _WIN32
+    _mkdir("../../saves");
+#else
+    mkdir("../../saves", 0755);
+#endif
+
     char filename[50];
     printf("Masukkan nama file untuk menyimpan (tanpa ekstensi): ");
-    fgets(filename, 50, stdin);
+    fgets(filename, sizeof(filename), stdin);
     filename[strcspn(filename, "\n")] = '\0';
 
     char filepath[100];
-    snprintf(filepath, 100, "saves/%s.txt", filename);
+    snprintf(filepath, sizeof(filepath), "../../saves/%s.txt", filename);
 
     FILE* file = fopen(filepath, "w");
     if (file == NULL) {
@@ -184,17 +223,21 @@ void saveGameState(Game* game) {
 }
 
 void loadGameState(Game* game) {
+    if (game == NULL) {
+        printf("Game tidak diinisialisasi.\n");
+        return;
+    }
+
     char filename[50];
     printf("Masukkan nama file untuk memuat (tanpa ekstensi): ");
-    fgets(filename, 50, stdin);
+    fgets(filename, sizeof(filename), stdin);
     filename[strcspn(filename, "\n")] = '\0';
 
     char filepath[100];
-    snprintf(filepath, 100, "saves/%s.txt", filename);
+    snprintf(filepath, sizeof(filepath), "../../saves/%s.txt", filename);
 
     FILE* file = fopen(filepath, "r");
     if (file == NULL) {
-        printf("File tidak ditemukan.\n");
         return;
     }
 
@@ -206,26 +249,47 @@ void loadGameState(Game* game) {
 
     char line[256];
     int storyIndex = -1;
-    while (fgets(line, 256, file)) {
+    StoryEntry* stories = NULL;
+    char storyFilename[100] = "";
+    while (fgets(line, sizeof(line), file)) {
         line[strcspn(line, "\n")] = '\0';
         if (strncmp(line, "Story: ", 7) == 0) {
             char storyTitle[100];
-            strncpy(storyTitle, line + 7, 100);
+            strncpy(storyTitle, line + 7, sizeof(storyTitle));
+            storyTitle[sizeof(storyTitle) - 1] = '\0';
             int count;
-            StoryEntry* stories = listStories(&count);
+            stories = listStories(&count);
+            if (stories == NULL) {
+                printf("Gagal memuat daftar cerita.\n");
+                fclose(file);
+                return;
+            }
             for (int i = 0; i < count; i++) {
                 if (strcmp(stories[i].title, storyTitle) == 0) {
                     storyIndex = i;
+                    strncpy(storyFilename, stories[i].filename, sizeof(storyFilename));
+                    storyFilename[sizeof(storyFilename) - 1] = '\0';
                     break;
                 }
             }
             free(stories);
+            stories = NULL;
             if (storyIndex != -1) {
-                game->currentStory = fm_load_story(stories[storyIndex].filename);
+                game->currentStory = fm_load_story(storyFilename);
+                if (game->currentStory == NULL) {
+                    printf("Gagal memuat cerita: %s\n", storyTitle);
+                    fclose(file);
+                    return;
+                }
+            } else {
+                printf("Cerita tidak ditemukan: %s\n", storyTitle);
+                fclose(file);
+                return;
             }
-        } else if (strncmp(line, "Chapter: ", 9) == 0) {
+        } else if (strncmp(line, "Chapter: ", 9) == 0 && game->currentStory != NULL) {
             char chapterTitle[100];
-            strncpy(chapterTitle, line + 9, 100);
+            strncpy(chapterTitle, line + 9, sizeof(chapterTitle));
+            chapterTitle[sizeof(chapterTitle) - 1] = '\0';
             addressChapter curr = game->currentStory->chapters.head;
             while (curr != NULL) {
                 if (strcmp(curr->title, chapterTitle) == 0) {
@@ -234,9 +298,15 @@ void loadGameState(Game* game) {
                 }
                 curr = curr->nextChapter;
             }
-        } else if (strncmp(line, "Scene: ", 7) == 0) {
+            if (game->currentChapter == NULL) {
+                printf("Chapter tidak ditemukan: %s\n", chapterTitle);
+                fclose(file);
+                return;
+            }
+        } else if (strncmp(line, "Scene: ", 7) == 0 && game->currentChapter != NULL) {
             char sceneTitle[100];
-            strncpy(sceneTitle, line + 7, 100);
+            strncpy(sceneTitle, line + 7, sizeof(sceneTitle));
+            sceneTitle[sizeof(sceneTitle) - 1] = '\0';
             addressScene curr = game->currentChapter->firstScene;
             while (curr != NULL) {
                 if (strcmp(curr->title, sceneTitle) == 0) {
@@ -245,20 +315,28 @@ void loadGameState(Game* game) {
                 }
                 curr = curr->nextScene;
             }
+            if (game->currentScene == NULL) {
+                printf("Scene tidak ditemukan: %s\n", sceneTitle);
+                fclose(file);
+                return;
+            }
         }
     }
     fclose(file);
 
     if (game->currentStory != NULL && game->currentChapter != NULL && game->currentScene != NULL) {
-        printf("Game state dimuat dari %s.\n", filepath);
         push(&game->sceneStack, game->currentScene);
+        printf("Game state dimuat dari %s.\n", filepath);
         selectScene(game);
     } else {
-        printf("Gagal memuat game state.\n");
+        printf("Gagal memuat game state: data tidak lengkap.\n");
+        if (game->currentStory == NULL)
+        if (game->currentChapter == NULL)
+        if (game->currentScene == NULL)
     }
 }
 
-void tampilkanMenuAwal(Game* game) {
+int tampilkanMenuAwal(Game* game) {
     int pilihan;
     do {
         printf("\n=== MENU AWAL ===\n");
@@ -267,7 +345,7 @@ void tampilkanMenuAwal(Game* game) {
         printf("3. Simpan Permainan\n");
         printf("4. Muat Permainan\n");
         printf("5. Lihat Riwayat Pilihan\n");
-        printf("6. Keluar\n");
+        printf("6. Kembali ke Menu Utama\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan); getchar();
 
@@ -292,27 +370,30 @@ void tampilkanMenuAwal(Game* game) {
                 tampilkanRiwayat(game);
                 break;
             case 6:
-                printf("Keluar dari permainan.\n");
-                freeStack(&game->sceneStack);
-                clearRiwayat(&game->pilihanRiwayat);
-                free(game);
-                break;
+                printf("Kembali ke menu utama.\n");
+                endGame(game);
+                return 1;
             default:
                 printf("Pilihan tidak valid. Silakan coba lagi.\n");
         }
     } while (pilihan != 6);
+    return 0;
 }
 
 int playerMode(Game* game) {
     int input;
     printf("Masukkan pilihan (1-%d), 0 untuk Undo, atau -1 untuk kembali ke Menu Awal: ", MAX_CHOICES);
-    scanf("%d", &input); getchar();
+    if (scanf("%d", &input) != 1) {
+        while (getchar() != '\n');
+        return 0;
+    }
+    getchar();
     return input;
 }
 
 int validatePlayerInput(int input, int maxChoices) {
-    if (input == 0) return -1; // Untuk undo
-    if (input == -1) return -2; // Untuk kembali ke menu awal
+    if (input == 0) return -1;
+    if (input == -1) return -2;
     if (input >= 1 && input <= maxChoices) return input;
-    return 0; // Input tidak valid, ulangi
+    return 0;
 }

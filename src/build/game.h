@@ -22,7 +22,7 @@ typedef struct Game {
 } Game;
 
 Game* createGame();
-void startGame(Game* game);
+int startGame(Game* game);
 void selectStory(Game* game);
 void selectScene(Game* game);
 void displayScene(Game* game);
@@ -31,7 +31,7 @@ void tampilkanRiwayat(Game* game);
 void endGame(Game* game);
 void saveGameState(Game* game);
 void loadGameState(Game* game);
-void tampilkanMenuAwal(Game* game);
+int tampilkanMenuAwal(Game* game);
 int playerMode(); // Diperbarui dari void menjadi int
 int validatePlayerInput(int input, int maxChoices);
 

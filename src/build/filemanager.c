@@ -12,7 +12,7 @@
 #include "scene.h"
 
 // Helper untuk menghapus newline
-static void trim(char* str) {
+void trim(char* str) {
     size_t len = strlen(str);
     if (len > 0 && str[len - 1] == '\n') str[len - 1] = '\0';
 }
@@ -30,16 +30,18 @@ void fm_save_story(addressStory s) {
     if (s == NULL) return;
 
     char folderName[150];
-    snprintf(folderName, sizeof(folderName), "../../data/%s", s->title);
+    snprintf(folderName, sizeof(folderName), "D:/absolute-cinema/data/%s", s->title);
     folderName[strcspn(folderName, "\n")] = '\0';
 
-    if (mkdir("data") != 0 && errno != EEXIST) {
+    if (mkdir("D:/absolute-cinema/data") != 0 && errno != EEXIST) {
         perror("Gagal membuat folder data");
+        fflush(stdout);
         return;
     }
 
     if (mkdir(folderName) != 0 && errno != EEXIST) {
         perror("Gagal membuat folder story");
+        fflush(stdout);
         return;
     }
 
@@ -50,6 +52,7 @@ void fm_save_story(addressStory s) {
     if (f == NULL) {
         perror("Gagal membuka file");
         printf("Path: %s\n", filePath);
+        fflush(stdout);
         return;
     }
 
@@ -58,6 +61,7 @@ void fm_save_story(addressStory s) {
     fclose(f);
 
     printf("Berhasil menyimpan ke: %s\n", filePath);
+    fflush(stdout);
 }
 
 void fm_save_chapter(addressStory s, addressChapter ch) {
@@ -71,16 +75,18 @@ void fm_save_chapter(addressStory s, addressChapter ch) {
     }
 
     char folderPath[150];
-    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
+    snprintf(folderPath, sizeof(folderPath), "D:/absolute-cinema/data/%s", s->title);
     folderPath[strcspn(folderPath, "\n")] = '\0';
 
-    if (mkdir("data") != 0 && errno != EEXIST) {
+    if (mkdir("D:/absolute-cinema/data") != 0 && errno != EEXIST) {
         perror("Gagal membuat folder data");
+        fflush(stdout);
         return;
     }
 
     if (mkdir(folderPath) != 0 && errno != EEXIST) {
         perror("Gagal membuat folder story");
+        fflush(stdout);
         return;
     }
 
@@ -93,28 +99,36 @@ void fm_save_chapter(addressStory s, addressChapter ch) {
         fprintf(cf, "Description: %s", ch->description);
         fclose(cf);
         printf("Chapter disimpan ke: %s\n", chapterFile);
+        fflush(stdout);
     } else {
         printf("Gagal menyimpan file chapter ke: %s\n", chapterFile);
+        fflush(stdout);
     }
 }
 
 void fm_save_chapter_with_scenes(addressStory s, addressChapter ch, int chapterIndex) {
     char folderPath[150], filePath[200];
-    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
+    snprintf(folderPath, sizeof(folderPath), "D:/absolute-cinema/data/%s", s->title);
     snprintf(filePath, sizeof(filePath), "%s/chapter_%d.txt", folderPath, chapterIndex);
 
-    if (mkdir("data") != 0 && errno != EEXIST) {
+    if (mkdir("D:/absolute-cinema/data") != 0 && errno != EEXIST) {
         perror("Gagal membuat folder data");
+        fflush(stdout);
         return;
     }
 
     if (mkdir(folderPath) != 0 && errno != EEXIST) {
         perror("Gagal membuat folder story");
+        fflush(stdout);
         return;
     }
 
     FILE *f = fopen(filePath, "w");
-    if (!f) return;
+    if (!f) {
+        printf("Gagal membuka file untuk menyimpan chapter: %s\n", filePath);
+        fflush(stdout);
+        return;
+    }
 
     fprintf(f, "[Judul]\n%s\n\n", ch->title);
     fprintf(f, "[Deskripsi]\n%s\n\n", ch->description);
@@ -142,18 +156,23 @@ void fm_save_chapter_with_scenes(addressStory s, addressChapter ch, int chapterI
 
     fclose(f);
     printf("Chapter %d berhasil disimpan.\n", chapterIndex);
+    fflush(stdout);
 }
 
 addressStory fm_load_story(char* filename) {
     if (filename == NULL) return NULL;
 
     char folderPath[MAX_NAME];
-    snprintf(folderPath, MAX_NAME, "data/%s", filename);
+    snprintf(folderPath, MAX_NAME, "D:/absolute-cinema/data/%s", filename);
 
     char detailsPath[MAX_NAME];
     snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
     FILE* file = fopen(detailsPath, "r");
-    if (file == NULL) return NULL;
+    if (file == NULL) {
+        printf("Gagal membuka %s: %s\n", detailsPath, strerror(errno)); // Debugging dengan errno
+        fflush(stdout);
+        return NULL;
+    }
 
     char line[1000];
     char storyTitle[MAX_TITLE] = "";
@@ -165,9 +184,17 @@ addressStory fm_load_story(char* filename) {
     }
     fclose(file);
 
-    if (storyTitle[0] == '\0') return NULL;
+    if (storyTitle[0] == '\0') {
+        printf("Tidak ada judul yang ditemukan di %s\n", detailsPath); // Debugging
+        fflush(stdout);
+        return NULL;
+    }
     addressStory story = createStory(storyTitle, storyDesc);
-    if (story == NULL) return NULL;
+    if (story == NULL) {
+        printf("Gagal membuat story dari %s\n", detailsPath); // Debugging
+        fflush(stdout);
+        return NULL;
+    }
 
     int chapterNum = 1;
     char chapterPath[MAX_NAME];
@@ -179,6 +206,8 @@ addressStory fm_load_story(char* filename) {
         addressChapter chapter = malloc(sizeof(Chapter));
         if (chapter == NULL) {
             fclose(chapterFile);
+            printf("Gagal alokasi memori untuk chapter\n"); // Debugging
+            fflush(stdout);
             return NULL;
         }
         chapter->nextChapter = NULL;
@@ -230,12 +259,15 @@ addressChapter fm_load_chapter_from_file(const char *filepath) {
     FILE *f = fopen(filepath, "r");
     if (!f) {
         perror("Gagal membuka file");
+        fflush(stdout);
         return NULL;
     }
 
     addressChapter ch = createChapter("", "");
     if (!ch) {
         fclose(f);
+        printf("Gagal membuat chapter dari %s\n", filepath); // Debugging
+        fflush(stdout);
         return NULL;
     }
 
@@ -306,11 +338,15 @@ addressChapter fm_load_chapter_from_file(const char *filepath) {
 
 void fm_load_chapters_from_folder(addressStory s) {
     char folderPath[150];
-    snprintf(folderPath, sizeof(folderPath), "../../data/%s", s->title);
+    snprintf(folderPath, sizeof(folderPath), "D:/absolute-cinema/data/%s", s->title);
     folderPath[strcspn(folderPath, "\n")] = '\0';
 
     DIR *dir = opendir(folderPath);
-    if (!dir) return;
+    if (!dir) {
+        printf("Gagal membuka folder %s: %s\n", folderPath, strerror(errno)); // Debugging dengan errno
+        fflush(stdout);
+        return;
+    }
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
@@ -324,10 +360,11 @@ void fm_load_chapters_from_folder(addressStory s) {
     closedir(dir);
 }
 
-void fm_load_all_stories(addressStory* listStory, const char* folderPath) {
-    DIR *dir = opendir(folderPath);
+void fm_load_all_stories(addressStory* listStory) {
+    DIR *dir = opendir("D:/absolute-cinema/data");
     if (dir == NULL) {
-        printf("Folder tidak ditemukan.\n");
+        printf("Folder tidak ditemukan: D:/absolute-cinema/data: %s\n", strerror(errno)); // Debugging dengan errno
+        fflush(stdout);
         return;
     }
 
@@ -337,7 +374,7 @@ void fm_load_all_stories(addressStory* listStory, const char* folderPath) {
             continue;
 
         char folderFullPath[256];
-        snprintf(folderFullPath, sizeof(folderFullPath), "%s/%s", folderPath, entry->d_name);
+        snprintf(folderFullPath, sizeof(folderFullPath), "D:/absolute-cinema/data/%s", entry->d_name);
 
         struct stat st;
         if (stat(folderFullPath, &st) == 0 && S_ISDIR(st.st_mode)) {
@@ -346,20 +383,44 @@ void fm_load_all_stories(addressStory* listStory, const char* folderPath) {
 
             FILE *f = fopen(path, "r");
             if (f) {
+                printf("Membaca file: %s\n", path); // Debugging
+                fflush(stdout);
                 char line[256];
                 char title[MAX_TITLE], desc[MAX_DESCRIPTION];
+                int foundTitle = 0;
 
-                fgets(line, sizeof(line), f);
-                sscanf(line, "Judul: %[^\n]", title);
-
-                fgets(line, sizeof(line), f);
-                sscanf(line, "Deskripsi: %[^\n]", desc);
-
+                while (fgets(line, sizeof(line), f)) {
+                    trim(line);
+                    if (strncmp(line, "Judul: ", 7) == 0) {
+                        strncpy(title, line + 7, MAX_TITLE - 1);
+                        title[MAX_TITLE - 1] = '\0';
+                        foundTitle = 1;
+                    } else if (strncmp(line, "Deskripsi: ", 11) == 0 && foundTitle) {
+                        strncpy(desc, line + 11, MAX_DESCRIPTION - 1);
+                        desc[MAX_DESCRIPTION - 1] = '\0';
+                        break;
+                    }
+                }
                 fclose(f);
 
-                addressStory s = createStory(title, desc);
-                addStory(listStory, s);
+                if (foundTitle) {
+                    addressStory s = createStory(title, desc);
+                    if (s != NULL) {
+                        addStory(listStory, s);
+                        printf("Cerita ditemukan: %s\n", title); // Debugging
+                        fflush(stdout);
+                    }
+                } else {
+                    printf("Tidak ada judul yang valid di %s\n", path); // Debugging
+                    fflush(stdout);
+                }
+            } else {
+                printf("Gagal membuka %s: %s\n", path, strerror(errno)); // Debugging dengan errno
+                fflush(stdout);
             }
+        } else {
+            printf("Bukan direktori atau error stat: %s\n", folderFullPath); // Debugging
+            fflush(stdout);
         }
     }
 
@@ -368,7 +429,7 @@ void fm_load_all_stories(addressStory* listStory, const char* folderPath) {
 
 addressChapter fm_load_chapter(addressStory s, int chapterIndex) {
     char filePath[200];
-    snprintf(filePath, sizeof(filePath), "../../data/%s/chapter_%d.txt", s->title, chapterIndex);
+    snprintf(filePath, sizeof(filePath), "D:/absolute-cinema/data/%s/chapter_%d.txt", s->title, chapterIndex);
 
     return fm_load_chapter_from_file(filePath);
 }
@@ -387,11 +448,15 @@ StoryEntry* listStories(int* count) {
     *count = 0;
     StoryEntry* stories = malloc(MAX_STORY * sizeof(StoryEntry));
     if (stories == NULL) {
+        printf("Gagal alokasi memori untuk stories\n"); // Debugging
+        fflush(stdout);
         return NULL;
     }
 
-    DIR* dir = opendir("data");
+    DIR* dir = opendir("D:/absolute-cinema/data");
     if (dir == NULL) {
+        printf("Gagal membuka folder data: D:/absolute-cinema/data: %s\n", strerror(errno)); // Debugging dengan errno
+        fflush(stdout);
         free(stories);
         return NULL;
     }
@@ -402,7 +467,7 @@ StoryEntry* listStories(int* count) {
             continue;
 
         char folderPath[MAX_NAME];
-        snprintf(folderPath, MAX_NAME, "data/%s", entry->d_name);
+        snprintf(folderPath, MAX_NAME, "D:/absolute-cinema/data/%s", entry->d_name);
 
         struct stat st;
         if (stat(folderPath, &st) == 0 && S_ISDIR(st.st_mode)) {
@@ -410,26 +475,38 @@ StoryEntry* listStories(int* count) {
             snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
             FILE* file = fopen(detailsPath, "r");
             if (file != NULL) {
+                printf("Membaca: %s\n", detailsPath); // Debugging
+                fflush(stdout);
                 char line[1000];
                 while (fgets(line, 1000, file)) {
                     trim(line);
                     if (strncmp(line, "Judul: ", 7) == 0) {
                         strncpy(stories[*count].filename, entry->d_name, MAX_NAME - 1);
                         stories[*count].filename[MAX_NAME - 1] = '\0';
-
                         strncpy(stories[*count].title, line + 7, MAX_TITLE - 1);
                         stories[*count].title[MAX_TITLE - 1] = '\0';
-
                         (*count)++;
                         break;
                     }
                 }
                 fclose(file);
+            } else {
+                printf("Gagal membuka %s: %s\n", detailsPath, strerror(errno)); // Debugging dengan errno
+                fflush(stdout);
             }
+        } else {
+            printf("Bukan direktori atau error stat: %s\n", folderPath); // Debugging
+            fflush(stdout);
         }
     }
 
     closedir(dir);
+    if (*count == 0) {
+        printf("Tidak ada cerita yang ditemukan di D:/absolute-cinema/data\n"); // Debugging
+        fflush(stdout);
+        free(stories);
+        return NULL;
+    }
     return stories;
 }
 
@@ -437,7 +514,7 @@ int validateFile(char* filename) {
     if (filename == NULL) return 0;
 
     char folderPath[MAX_NAME];
-    snprintf(folderPath, MAX_NAME, "data/%s", filename);
+    snprintf(folderPath, MAX_NAME, "D:/absolute-cinema/data/%s", filename);
     char detailsPath[MAX_NAME];
     snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
     FILE* file = fopen(detailsPath, "r");
@@ -462,7 +539,7 @@ void deleteStory(char* filename) {
     if (filename == NULL) return;
 
     char folderPath[MAX_NAME];
-    snprintf(folderPath, MAX_NAME, "data/%s", filename);
+    snprintf(folderPath, MAX_NAME, "D:/absolute-cinema/data/%s", filename);
     char command[300];
     snprintf(command, 300, "rm -rf %s", folderPath);
     system(command);
@@ -472,7 +549,7 @@ void updateStoryFile(addressStory story, char* filename) {
     if (story == NULL || filename == NULL) return;
 
     char folderPath[MAX_NAME];
-    snprintf(folderPath, MAX_NAME, "data/%s", filename);
+    snprintf(folderPath, MAX_NAME, "D:/absolute-cinema/data/%s", filename);
 
     char detailsPath[MAX_NAME];
     snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
@@ -480,6 +557,7 @@ void updateStoryFile(addressStory story, char* filename) {
     FILE* file = fopen(detailsPath, "w");
     if (file == NULL) {
         printf("Gagal membuka file untuk diperbarui!\n");
+        fflush(stdout);
         return;
     }
 
@@ -488,4 +566,5 @@ void updateStoryFile(addressStory story, char* filename) {
     fclose(file);
 
     printf("File story berhasil diperbarui!\n");
+    fflush(stdout);
 }

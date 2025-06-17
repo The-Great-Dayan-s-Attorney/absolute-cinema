@@ -16,7 +16,7 @@ void menuChapter(addressStory s, addressChapter ch, int chapterIndex);
 
 void mainMenuBuild() {
     addressStory listStory = NULL;
-    fm_load_all_stories(&listStory, "../../data");
+    fm_load_all_stories(&listStory);
     int pilihan;
 
     do {

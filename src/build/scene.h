@@ -1,6 +1,11 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
 #include "convention.h"
 #include "choices.h"
 #include "chapter.h"

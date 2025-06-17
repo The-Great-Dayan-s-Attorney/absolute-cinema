@@ -1,0 +1,14 @@
+[Judul]
+Pertemuan di Kastil Terlarang
+
+[Deskripsi]
+Aang sampai di Kastil Terlarang, tempat Lira dikurung oleh penyihir jahat. Cinta mereka diuji.
+
+[Scene]
+3|Menyelamatkan Lira|Aang melihat Lira dalam sangkar magis, siap bertarung melawan penyihir.
+4|Pengakuan Cinta|Aang dan Lira saling mengaku cinta, mengakhiri kutukan bersama.
+
+[Choices]
+3|Serang Penyihir|4
+3|Gunakan Mantra Cinta|4
+4|Selesai|-

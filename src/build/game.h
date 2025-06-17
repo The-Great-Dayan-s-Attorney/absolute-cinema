@@ -32,7 +32,7 @@ void endGame(Game* game);
 void saveGameState(Game* game);
 void loadGameState(Game* game);
 void tampilkanMenuAwal(Game* game);
-int playerMode(Game* game); // Diperbarui dari void menjadi int
+int playerMode(); // Diperbarui dari void menjadi int
 int validatePlayerInput(int input, int maxChoices);
 
 #endif

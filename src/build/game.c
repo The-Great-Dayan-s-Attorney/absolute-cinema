@@ -274,7 +274,7 @@ void tampilkanMenuAwal(Game* game) {
     } while (pilihan != 6);
 }
 
-int playerMode(Game* game) {
+int playerMode() {
     int input;
     printf("Masukkan pilihan (1-%d) atau 0 untuk Undo: ", MAX_CHOICES);
     scanf("%d", &input); getchar();

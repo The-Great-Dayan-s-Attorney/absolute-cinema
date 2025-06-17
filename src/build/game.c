@@ -67,8 +67,6 @@ void selectStory(Game* game) {
         printf("Gagal memuat cerita.\n");
         return;
     }
-
-    printf("Debug: Loaded story with %d chapters\n", countChapters(game->currentStory));
     selectScene(game);
 }
 
@@ -94,7 +92,6 @@ void selectScene(Game* game) {
             printf("Tidak ada chapter dalam cerita ini.\n");
             return;
         }
-        printf("Debug: Selected chapter: %s\n", game->currentChapter->title);
     }
 
     if (game->currentScene == NULL) {
@@ -103,7 +100,6 @@ void selectScene(Game* game) {
             printf("Tidak ada scene dalam chapter ini.\n");
             return;
         }
-        printf("Debug: Pushing initial scene: %s\n", game->currentScene->title);
         push(&game->sceneStack, game->currentScene);
     }
 
@@ -128,10 +124,8 @@ void displayScene(Game* game) {
     }
 
     if (choiceCount == 0) {
-        printf("Debug: No choices in scene %s\n", game->currentScene->title);
         addressChapter nextChapter = game->currentChapter->nextChapter;
         if (nextChapter != NULL) {
-            printf("Debug: Moving to next chapter: %s\n", nextChapter->title);
             game->currentChapter = nextChapter;
             game->currentScene = nextChapter->firstScene;
             if (game->currentScene == NULL) {
@@ -169,7 +163,6 @@ void displayScene(Game* game) {
     } else if (input >= 1 && input <= choiceCount) {
         addRiwayat(&game->pilihanRiwayat, input, game->currentScene->choices[input - 1].title);
         game->currentScene = game->currentScene->choices[input - 1].nextScene;
-        printf("Debug: Pushing new scene: %s\n", game->currentScene->title);
         push(&game->sceneStack, game->currentScene);
         displayScene(game);
     }
@@ -181,9 +174,7 @@ void undoScene(Game* game) {
         return;
     }
 
-    printf("Debug: Checking stack state before undo\n");
     if (isEmptyStack(&game->sceneStack)) {
-        printf("Debug: Stack is empty\n");
         printf("Tidak ada scene sebelumnya untuk diundo.\n");
         if (game->currentScene != NULL) {
             displayScene(game);
@@ -204,14 +195,11 @@ void undoScene(Game* game) {
         return;
     }
 
-    printf("Debug: Performing undo, stack top: %s\n", game->sceneStack.top->scene->title);
     pop(&game->sceneStack);
     game->currentScene = game->sceneStack.top != NULL ? game->sceneStack.top->scene : NULL;
     if (game->currentScene != NULL) {
-        printf("Debug: Scene after undo: %s\n", game->currentScene->title);
         displayScene(game);
     } else {
-        printf("Debug: No scene available after undo\n");
         printf("Tidak ada scene untuk ditampilkan setelah undo.\n");
     }
 }
@@ -286,13 +274,10 @@ void loadGameState(Game* game) {
     char filepath[100];
     snprintf(filepath, sizeof(filepath), "../../saves/%s.txt", filename);
 
-    printf("Debug: Mencoba membuka file di %s\n", filepath);
     FILE* file = fopen(filepath, "r");
     if (file == NULL) {
-        printf("Debug: Gagal membuka file: %s (errno: %s)\n", filepath, strerror(errno));
         return;
     }
-    printf("Debug: File berhasil dibuka: %s\n", filepath);
 
     freeStack(&game->sceneStack);
     clearRiwayat(&game->pilihanRiwayat);
@@ -306,7 +291,6 @@ void loadGameState(Game* game) {
     char storyFilename[100] = "";
     while (fgets(line, sizeof(line), file)) {
         line[strcspn(line, "\n")] = '\0';
-        printf("Debug: Membaca baris: %s\n", line);
         if (strncmp(line, "Story: ", 7) == 0) {
             char storyTitle[100];
             strncpy(storyTitle, line + 7, sizeof(storyTitle));
@@ -329,7 +313,6 @@ void loadGameState(Game* game) {
             free(stories);
             stories = NULL;
             if (storyIndex != -1) {
-                printf("Debug: Memuat cerita: %s\n", storyFilename);
                 game->currentStory = fm_load_story(storyFilename);
                 if (game->currentStory == NULL) {
                     printf("Gagal memuat cerita: %s\n", storyTitle);
@@ -380,15 +363,14 @@ void loadGameState(Game* game) {
     fclose(file);
 
     if (game->currentStory != NULL && game->currentChapter != NULL && game->currentScene != NULL) {
-        printf("Debug: Semua state dimuat, mendorong scene ke stack.\n");
         push(&game->sceneStack, game->currentScene);
         printf("Game state dimuat dari %s.\n", filepath);
         selectScene(game);
     } else {
         printf("Gagal memuat game state: data tidak lengkap.\n");
-        if (game->currentStory == NULL) printf("Debug: Cerita tidak dimuat.\n");
-        if (game->currentChapter == NULL) printf("Debug: Chapter tidak dimuat.\n");
-        if (game->currentScene == NULL) printf("Debug: Scene tidak dimuat.\n");
+        if (game->currentStory == NULL) printf("Cerita tidak dimuat.\n");
+        if (game->currentChapter == NULL) printf("Chapter tidak dimuat.\n");
+        if (game->currentScene == NULL) printf("Scene tidak dimuat.\n");
     }
 }
 

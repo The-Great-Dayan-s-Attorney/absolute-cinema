@@ -303,13 +303,11 @@ void fm_load_chapters_from_folder(addressStory s) {
         return;
     }
 
-    printf("Memulai pemindaian chapter di: %s\n", folderPath);
     fflush(stdout);
 
     struct dirent *entry;
     int chapterCount = 0;
     while ((entry = readdir(dir)) != NULL) {
-        printf("Ditemukan file: %s\n", entry->d_name);
         fflush(stdout);
         if (strstr(entry->d_name, "chapter_")) {
             char baseName[50];
@@ -324,7 +322,6 @@ void fm_load_chapters_from_folder(addressStory s) {
                     f = fopen(pathWithExt, "r");
                 }
                 if (f != NULL) {
-                    printf("Membaca chapter: %s\n", pathWithExt);
                     fflush(stdout);
                     fclose(f);
                     addressChapter ch = fm_load_chapter_from_file(pathWithExt);
@@ -355,12 +352,10 @@ void fm_load_all_stories(addressStory* listStory) {
         return;
     }
 
-    printf("Memulai pemindaian folder: ../../data\n");
     fflush(stdout);
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        printf("Memeriksa entri: %s\n", entry->d_name);
         fflush(stdout);
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
@@ -370,7 +365,6 @@ void fm_load_all_stories(addressStory* listStory) {
 
         struct stat st;
         if (stat(folderFullPath, &st) == 0 && S_ISDIR(st.st_mode)) {
-            printf("Menemukan folder: %s\n", folderFullPath);
             fflush(stdout);
             char path[300];
             snprintf(path, sizeof(path), "%s/details_story.txt", folderFullPath);
@@ -381,7 +375,6 @@ void fm_load_all_stories(addressStory* listStory) {
                 f = fopen(path, "r");
             }
             if (f) {
-                printf("Membaca file: %s\n", path);
                 fflush(stdout);
                 char line[256];
                 char title[MAX_TITLE], desc[MAX_DESCRIPTION];
@@ -405,7 +398,6 @@ void fm_load_all_stories(addressStory* listStory) {
                     addressStory s = createStory(title, desc);
                     if (s != NULL) {
                         addStory(listStory, s);
-                        printf("Cerita ditemukan: %s\n", title);
                         fflush(stdout);
                     }
                 } else {
@@ -417,7 +409,6 @@ void fm_load_all_stories(addressStory* listStory) {
                 fflush(stdout);
             }
         } else {
-            printf("Bukan direktori atau error stat: %s\n", folderFullPath);
             fflush(stdout);
         }
     }
@@ -470,12 +461,10 @@ StoryEntry* listStories(int* count) {
         return NULL;
     }
 
-    printf("Memulai pemindaian daftar cerita...\n");
     fflush(stdout);
 
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
-        printf("Memeriksa: %s\n", entry->d_name);
         fflush(stdout);
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
@@ -485,7 +474,6 @@ StoryEntry* listStories(int* count) {
 
         struct stat st;
         if (stat(folderPath, &st) == 0 && S_ISDIR(st.st_mode)) {
-            printf("Folder ditemukan: %s\n", folderPath);
             fflush(stdout);
             char detailsPath[MAX_NAME];
             snprintf(detailsPath, MAX_NAME, "%s/details_story.txt", folderPath);
@@ -495,7 +483,6 @@ StoryEntry* listStories(int* count) {
                 file = fopen(detailsPath, "r");
             }
             if (file != NULL) {
-                printf("Membaca: %s\n", detailsPath);
                 fflush(stdout);
                 char line[1000];
                 while (fgets(line, 1000, file)) {
@@ -515,7 +502,6 @@ StoryEntry* listStories(int* count) {
                 fflush(stdout);
             }
         } else {
-            printf("Bukan direktori atau error stat: %s\n", folderPath);
             fflush(stdout);
         }
     }

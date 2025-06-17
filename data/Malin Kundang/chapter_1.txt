@@ -1,9 +1,0 @@
-[Judul]
-begining
-[Deskripsi]
-aoidj
-[Scene]
-1|eoijaiof|aeofhaeio
-2|aeoifae|aoeifhae
-[Choices]
-1|aeofihae|2

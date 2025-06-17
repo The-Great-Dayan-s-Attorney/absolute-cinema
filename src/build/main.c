@@ -29,9 +29,12 @@ int main() {
     Game* game = NULL;
 
     do {
+        tampilkanHeaderVisualNovel();
+
         printf("\n=== MENU UTAMA VISUAL NOVEL ===\n");
         printf("1. Mode Build (Buat Cerita)\n");
         printf("2. Mode Play (Mainkan Cerita)\n");
+        printf("3. How to Play\n");
         printf("3. Keluar\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan);

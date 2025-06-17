@@ -68,7 +68,18 @@ void selectStory(Game* game) {
         return;
     }
 
+    printf("Debug: Loaded story with %d chapters\n", countChapters(game->currentStory));
     selectScene(game);
+}
+
+int countChapters(addressStory story) {
+    int count = 0;
+    addressChapter curr = story->chapters.head;
+    while (curr != NULL) {
+        count++;
+        curr = curr->nextChapter;
+    }
+    return count;
 }
 
 void selectScene(Game* game) {
@@ -83,6 +94,7 @@ void selectScene(Game* game) {
             printf("Tidak ada chapter dalam cerita ini.\n");
             return;
         }
+        printf("Debug: Selected chapter: %s\n", game->currentChapter->title);
     }
 
     if (game->currentScene == NULL) {
@@ -116,8 +128,29 @@ void displayScene(Game* game) {
     }
 
     if (choiceCount == 0) {
-        printf("Tidak ada pilihan. Cerita selesai.\n");
-        endGame(game);
+        printf("Debug: No choices in scene %s\n", game->currentScene->title);
+        addressChapter nextChapter = game->currentChapter->nextChapter;
+        if (nextChapter != NULL) {
+            printf("Debug: Moving to next chapter: %s\n", nextChapter->title);
+            game->currentChapter = nextChapter;
+            game->currentScene = nextChapter->firstScene;
+            if (game->currentScene == NULL) {
+                printf("Tidak ada scene dalam chapter berikutnya.\n");
+                endGame(game);
+                return;
+            }
+            freeStack(&game->sceneStack);
+            Stack* stack = createStack();
+            if (stack != NULL) {
+                game->sceneStack = *stack;
+                free(stack);
+            }
+            push(&game->sceneStack, game->currentScene);
+            displayScene(game);
+        } else {
+            printf("Tidak ada chapter berikutnya. Cerita selesai.\n");
+            endGame(game);
+        }
         return;
     }
 
